@@ -1,0 +1,2792 @@
+# Shell completion for asana-cli
+#
+# To enable completions, add this to your shell config:
+#
+# For zsh (~/.zshrc):
+#   asana-cli completions zsh > ~/.zsh/completions/_asana-cli
+#   # Ensure fpath includes ~/.zsh/completions
+
+#compdef asana-cli
+
+autoload -U is-at-least
+
+_asana-cli() {
+    typeset -A opt_args
+    typeset -a _arguments_options
+    local ret=1
+
+    if is-at-least 5.2; then
+        _arguments_options=(-s -S -C)
+    else
+        _arguments_options=(-s -C)
+    fi
+
+    local context curcontext="$curcontext" state line
+    _arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+'-V[Print version]' \
+'--version[Print version]' \
+":: :_asana-cli_commands" \
+"*::: :->asana-cli" \
+&& ret=0
+    case $state in
+    (asana-cli)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-command-$line[1]:"
+        case $line[1] in
+            (version)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(license)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(config)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+":: :_asana-cli__config_commands" \
+"*::: :->config" \
+&& ret=0
+
+    case $state in
+    (config)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-config-command-$line[1]:"
+        case $line[1] in
+            (set)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+":: :_asana-cli__config__set_commands" \
+"*::: :->set" \
+&& ret=0
+
+    case $state in
+    (set)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-config-set-command-$line[1]:"
+        case $line[1] in
+            (token)
+_arguments "${_arguments_options[@]}" : \
+'--token=[Personal Access Token value; omit to be prompted securely]:TOKEN:_default' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(workspace)
+_arguments "${_arguments_options[@]}" : \
+'--workspace=[Workspace gid to use when none is supplied on the command line]:GID:_default' \
+'--clear[Clear the stored default workspace]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(assignee)
+_arguments "${_arguments_options[@]}" : \
+'--assignee=[Identifier (email or gid) that should replace the \`me\` alias]:ID:_default' \
+'--clear[Clear the stored default assignee]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_asana-cli__config__set__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-config-set-help-command-$line[1]:"
+        case $line[1] in
+            (token)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(workspace)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(assignee)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(get)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(test)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_asana-cli__config__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-config-help-command-$line[1]:"
+        case $line[1] in
+            (set)
+_arguments "${_arguments_options[@]}" : \
+":: :_asana-cli__config__help__set_commands" \
+"*::: :->set" \
+&& ret=0
+
+    case $state in
+    (set)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-config-help-set-command-$line[1]:"
+        case $line[1] in
+            (token)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(workspace)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(assignee)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(get)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(test)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(task)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+":: :_asana-cli__task_commands" \
+"*::: :->task" \
+&& ret=0
+
+    case $state in
+    (task)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-task-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" : \
+'--workspace=[Workspace identifier filter]:WORKSPACE:_default' \
+'--project=[Project identifier filter]:PROJECT:_default' \
+'--section=[Section identifier filter]:SECTION:_default' \
+'--assignee=[Assignee identifier or email filter]:ASSIGNEE:_default' \
+'--completed=[Filter by completion state]:COMPLETED:(true false)' \
+'--due-before=[Only include tasks due on or before the provided date]:DUE_BEFORE:_default' \
+'--due-after=[Only include tasks due on or after the provided date]:DUE_AFTER:_default' \
+'--limit=[Maximum number of tasks to retrieve]:LIMIT:_default' \
+'--sort=[Sort order (\`name\`, \`due_on\`, \`created_at\`, \`modified_at\`, \`assignee\`)]:SORT:_default' \
+'*--fields=[Additional fields to request from the API]:FIELD:_default' \
+'--output=[Output format override]:OUTPUT:((table\:"Automatically selected table (default when interactive)"
+json\:"JSON representation suitable for scripting"
+csv\:"Comma separated value export"
+markdown\:"Markdown friendly tables"))' \
+'--include-subtasks[Include subtasks in the listing response]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+&& ret=0
+;;
+(show)
+_arguments "${_arguments_options[@]}" : \
+'*--fields=[Additional fields to request from the API]:FIELD:_default' \
+'--output=[Output format override]:OUTPUT:((table\:"Automatically selected table (default when interactive)"
+json\:"JSON representation suitable for scripting"
+csv\:"Comma separated value export"
+markdown\:"Markdown friendly tables"))' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+':task -- Task identifier (gid):_default' \
+&& ret=0
+;;
+(create)
+_arguments "${_arguments_options[@]}" : \
+'--name=[Task name; required unless \`--interactive\`]:NAME:_default' \
+'--workspace=[Workspace identifier]:WORKSPACE:_default' \
+'*--project=[Project identifiers to associate with the task]:PROJECT:_default' \
+'--section=[Section identifier within the first project]:SECTION:_default' \
+'--parent=[Parent task identifier to create a subtask]:PARENT:_default' \
+'--assignee=[Assignee identifier (gid or email)]:ASSIGNEE:_default' \
+'--notes=[Task notes in plain text]:NOTES:_default' \
+'--html-notes=[Task notes in HTML format]:HTML_NOTES:_default' \
+'--due-on=[Due date (natural language accepted)]:DUE_ON:_default' \
+'--due-at=[Due date/time (natural language accepted)]:DUE_AT:_default' \
+'--start-on=[Start date (natural language accepted)]:START_ON:_default' \
+'--start-at=[Start date/time (natural language accepted)]:START_AT:_default' \
+'*--tag=[Tags to apply to the task]:TAG:_default' \
+'*--follower=[Followers to subscribe to notifications]:USER:_default' \
+'*--custom-field=[Custom field assignments in KEY=VALUE form]:KEY=VALUE:_default' \
+'--output=[Output format override]:OUTPUT:((table\:"Automatically selected table (default when interactive)"
+json\:"JSON representation suitable for scripting"
+csv\:"Comma separated value export"
+markdown\:"Markdown friendly tables"))' \
+'--interactive[Prompt for missing values interactively]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+&& ret=0
+;;
+(update)
+_arguments "${_arguments_options[@]}" : \
+'--name=[New task name]:NAME:_default' \
+'--notes=[Replace notes with plain text content]:NOTES:_default' \
+'--html-notes=[Replace notes with HTML content]:HTML_NOTES:_default' \
+'--assignee=[Assign the task to the specified user (gid or email)]:ASSIGNEE:_default' \
+'--due-on=[Set all-day due date (natural language accepted)]:DUE_ON:_default' \
+'--due-at=[Set due date/time (natural language accepted)]:DUE_AT:_default' \
+'--start-on=[Set start date (natural language accepted)]:START_ON:_default' \
+'--start-at=[Set start date/time (natural language accepted)]:START_AT:_default' \
+'--parent=[Set parent task identifier]:PARENT:_default' \
+'*--tag=[Replace tags with provided identifiers]:TAG:_default' \
+'*--follower=[Replace followers with provided identifiers]:USER:_default' \
+'*--project=[Replace project associations]:PROJECT:_default' \
+'*--custom-field=[Custom field updates in KEY=VALUE form]:KEY=VALUE:_default' \
+'--output=[Output format override]:OUTPUT:((table\:"Automatically selected table (default when interactive)"
+json\:"JSON representation suitable for scripting"
+csv\:"Comma separated value export"
+markdown\:"Markdown friendly tables"))' \
+'--clear-notes[Clear existing plain text notes]' \
+'--clear-html-notes[Clear existing HTML notes]' \
+'--clear-assignee[Remove the current assignee]' \
+'--complete[Mark the task complete]' \
+'--incomplete[Mark the task incomplete]' \
+'--clear-due-on[Clear the all-day due date]' \
+'--clear-due-at[Clear the due date/time]' \
+'--clear-start-on[Clear the start date]' \
+'--clear-start-at[Clear the start date/time]' \
+'--clear-parent[Remove the parent task]' \
+'--clear-tags[Remove all tags]' \
+'--clear-followers[Remove all followers]' \
+'--clear-projects[Remove all project associations]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+':task -- Task identifier (gid):_default' \
+&& ret=0
+;;
+(delete)
+_arguments "${_arguments_options[@]}" : \
+'--force[Skip confirmation prompt]' \
+'-h[Print help]' \
+'--help[Print help]' \
+':task -- Task identifier (gid):_default' \
+&& ret=0
+;;
+(create-batch)
+_arguments "${_arguments_options[@]}" : \
+'--file=[Path to JSON or CSV batch file]:PATH:_files' \
+'--format=[Override detected input format (\`json\` or \`csv\`)]:FORMAT:((json\:"JSON array of objects"
+csv\:"CSV file with headers"))' \
+'--output=[Output format for created tasks]:OUTPUT:((table\:"Automatically selected table (default when interactive)"
+json\:"JSON representation suitable for scripting"
+csv\:"Comma separated value export"
+markdown\:"Markdown friendly tables"))' \
+'--continue-on-error[Continue processing after an error]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+&& ret=0
+;;
+(update-batch)
+_arguments "${_arguments_options[@]}" : \
+'--file=[Path to JSON or CSV batch file]:PATH:_files' \
+'--format=[Override detected input format (\`json\` or \`csv\`)]:FORMAT:((json\:"JSON array of objects"
+csv\:"CSV file with headers"))' \
+'--output=[Output format for updated tasks]:OUTPUT:((table\:"Automatically selected table (default when interactive)"
+json\:"JSON representation suitable for scripting"
+csv\:"Comma separated value export"
+markdown\:"Markdown friendly tables"))' \
+'--continue-on-error[Continue processing after an error]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+&& ret=0
+;;
+(complete-batch)
+_arguments "${_arguments_options[@]}" : \
+'--file=[Path to JSON or CSV batch file]:PATH:_files' \
+'--format=[Override detected input format (\`json\` or \`csv\`)]:FORMAT:((json\:"JSON array of objects"
+csv\:"CSV file with headers"))' \
+'--output=[Output format for resulting tasks]:OUTPUT:((table\:"Automatically selected table (default when interactive)"
+json\:"JSON representation suitable for scripting"
+csv\:"Comma separated value export"
+markdown\:"Markdown friendly tables"))' \
+'--continue-on-error[Continue processing after an error]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+&& ret=0
+;;
+(search)
+_arguments "${_arguments_options[@]}" : \
+'--workspace=[Workspace to scope the search]:WORKSPACE:_default' \
+'--limit=[Limit number of matches retrieved from the API]:LIMIT:_default' \
+'--output=[Output format override]:OUTPUT:((table\:"Automatically selected table (default when interactive)"
+json\:"JSON representation suitable for scripting"
+csv\:"Comma separated value export"
+markdown\:"Markdown friendly tables"))' \
+'--recent-only[Only show recently accessed tasks]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+'::query -- Search query (fuzzy):_default' \
+&& ret=0
+;;
+(subtasks)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+":: :_asana-cli__task__subtasks_commands" \
+"*::: :->subtasks" \
+&& ret=0
+
+    case $state in
+    (subtasks)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-task-subtasks-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" : \
+'*--fields=[Additional fields to request]:FIELD:_default' \
+'--output=[Output format override]:OUTPUT:((table\:"Automatically selected table (default when interactive)"
+json\:"JSON representation suitable for scripting"
+csv\:"Comma separated value export"
+markdown\:"Markdown friendly tables"))' \
+'--recursive[Traverse subtasks recursively]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+':task -- Parent task identifier:_default' \
+&& ret=0
+;;
+(create)
+_arguments "${_arguments_options[@]}" : \
+'--name=[Task name; required unless \`--interactive\`]:NAME:_default' \
+'--assignee=[Assignee identifier (gid or email)]:ASSIGNEE:_default' \
+'--due-on=[Due date (natural language accepted)]:DUE_ON:_default' \
+'--due-at=[Due date/time (natural language accepted)]:DUE_AT:_default' \
+'--start-on=[Start date (natural language accepted)]:START_ON:_default' \
+'--start-at=[Start date/time (natural language accepted)]:START_AT:_default' \
+'*--tag=[Tags to apply]:TAG:_default' \
+'*--follower=[Followers to notify]:USER:_default' \
+'*--custom-field=[Custom field assignments in KEY=VALUE form]:KEY=VALUE:_default' \
+'--output=[Output format override]:OUTPUT:((table\:"Automatically selected table (default when interactive)"
+json\:"JSON representation suitable for scripting"
+csv\:"Comma separated value export"
+markdown\:"Markdown friendly tables"))' \
+'--interactive[Prompt for missing values interactively]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+':parent -- Parent task identifier:_default' \
+&& ret=0
+;;
+(convert)
+_arguments "${_arguments_options[@]}" : \
+'(--root)--parent=[New parent task identifier]:PARENT:_default' \
+'--root[Convert the task back to a top-level task]' \
+'-h[Print help]' \
+'--help[Print help]' \
+':task -- Task identifier to convert:_default' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_asana-cli__task__subtasks__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-task-subtasks-help-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(create)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(convert)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(depends-on)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+":: :_asana-cli__task__depends-on_commands" \
+"*::: :->depends-on" \
+&& ret=0
+
+    case $state in
+    (depends-on)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-task-depends-on-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" : \
+'--output=[Output format override]:OUTPUT:((table\:"Automatically selected table (default when interactive)"
+json\:"JSON representation suitable for scripting"
+csv\:"Comma separated value export"
+markdown\:"Markdown friendly tables"))' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+':task -- Task identifier:_default' \
+&& ret=0
+;;
+(add)
+_arguments "${_arguments_options[@]}" : \
+'*--dependency=[Dependency identifiers to add/remove]:TASK:_default' \
+'-h[Print help]' \
+'--help[Print help]' \
+':task -- Task identifier:_default' \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" : \
+'*--dependency=[Dependency identifiers to add/remove]:TASK:_default' \
+'-h[Print help]' \
+'--help[Print help]' \
+':task -- Task identifier:_default' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_asana-cli__task__depends-on__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-task-depends-on-help-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(add)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(blocks)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+":: :_asana-cli__task__blocks_commands" \
+"*::: :->blocks" \
+&& ret=0
+
+    case $state in
+    (blocks)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-task-blocks-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" : \
+'--output=[Output format override]:OUTPUT:((table\:"Automatically selected table (default when interactive)"
+json\:"JSON representation suitable for scripting"
+csv\:"Comma separated value export"
+markdown\:"Markdown friendly tables"))' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+':task -- Task identifier:_default' \
+&& ret=0
+;;
+(add)
+_arguments "${_arguments_options[@]}" : \
+'*--dependent=[Dependent identifiers to add/remove]:TASK:_default' \
+'-h[Print help]' \
+'--help[Print help]' \
+':task -- Task identifier:_default' \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" : \
+'*--dependent=[Dependent identifiers to add/remove]:TASK:_default' \
+'-h[Print help]' \
+'--help[Print help]' \
+':task -- Task identifier:_default' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_asana-cli__task__blocks__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-task-blocks-help-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(add)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(projects)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+":: :_asana-cli__task__projects_commands" \
+"*::: :->projects" \
+&& ret=0
+
+    case $state in
+    (projects)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-task-projects-command-$line[1]:"
+        case $line[1] in
+            (add)
+_arguments "${_arguments_options[@]}" : \
+'--project=[Project identifier to add]:PROJECT:_default' \
+'--section=[Optional section identifier]:SECTION:_default' \
+'-h[Print help]' \
+'--help[Print help]' \
+':task -- Task identifier:_default' \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" : \
+'--project=[Project identifier to remove]:PROJECT:_default' \
+'-h[Print help]' \
+'--help[Print help]' \
+':task -- Task identifier:_default' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_asana-cli__task__projects__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-task-projects-help-command-$line[1]:"
+        case $line[1] in
+            (add)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(followers)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+":: :_asana-cli__task__followers_commands" \
+"*::: :->followers" \
+&& ret=0
+
+    case $state in
+    (followers)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-task-followers-command-$line[1]:"
+        case $line[1] in
+            (add)
+_arguments "${_arguments_options[@]}" : \
+'*--follower=[Followers to add or remove]:USER:_default' \
+'-h[Print help]' \
+'--help[Print help]' \
+':task -- Task identifier:_default' \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" : \
+'*--follower=[Followers to add or remove]:USER:_default' \
+'-h[Print help]' \
+'--help[Print help]' \
+':task -- Task identifier:_default' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_asana-cli__task__followers__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-task-followers-help-command-$line[1]:"
+        case $line[1] in
+            (add)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_asana-cli__task__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-task-help-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(show)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(create)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(update)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(delete)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(create-batch)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(update-batch)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(complete-batch)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(search)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(subtasks)
+_arguments "${_arguments_options[@]}" : \
+":: :_asana-cli__task__help__subtasks_commands" \
+"*::: :->subtasks" \
+&& ret=0
+
+    case $state in
+    (subtasks)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-task-help-subtasks-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(create)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(convert)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(depends-on)
+_arguments "${_arguments_options[@]}" : \
+":: :_asana-cli__task__help__depends-on_commands" \
+"*::: :->depends-on" \
+&& ret=0
+
+    case $state in
+    (depends-on)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-task-help-depends-on-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(add)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(blocks)
+_arguments "${_arguments_options[@]}" : \
+":: :_asana-cli__task__help__blocks_commands" \
+"*::: :->blocks" \
+&& ret=0
+
+    case $state in
+    (blocks)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-task-help-blocks-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(add)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(projects)
+_arguments "${_arguments_options[@]}" : \
+":: :_asana-cli__task__help__projects_commands" \
+"*::: :->projects" \
+&& ret=0
+
+    case $state in
+    (projects)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-task-help-projects-command-$line[1]:"
+        case $line[1] in
+            (add)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(followers)
+_arguments "${_arguments_options[@]}" : \
+":: :_asana-cli__task__help__followers_commands" \
+"*::: :->followers" \
+&& ret=0
+
+    case $state in
+    (followers)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-task-help-followers-command-$line[1]:"
+        case $line[1] in
+            (add)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(project)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+":: :_asana-cli__project_commands" \
+"*::: :->project" \
+&& ret=0
+
+    case $state in
+    (project)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-project-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" : \
+'--workspace=[Workspace identifier to filter by]:WORKSPACE:_default' \
+'--team=[Team identifier to filter by]:TEAM:_default' \
+'--archived=[Filter projects by archived flag]:ARCHIVED:(true false)' \
+'--sort=[Sort field (\`name\`, \`created_at\`, \`modified_at\`)]:SORT:_default' \
+'--output=[Output format override]:OUTPUT:((table\:"Automatically selected table (default when interactive)"
+json\:"JSON representation suitable for scripting"
+csv\:"Comma separated value export"
+markdown\:"Markdown friendly tables"))' \
+'*--filter=[Inline filter expressions (field=value, field!=value, field~regex, field\:substring)]:EXPR:_default' \
+'*--filter-saved=[Include filters saved to disk]:NAME:_default' \
+'--save-filter=[Persist the provided filter expressions for reuse]:NAME:_default' \
+'--limit=[Maximum number of projects to retrieve]:LIMIT:_default' \
+'*--fields=[Additional fields to request from the API]:FIELD:_default' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+&& ret=0
+;;
+(show)
+_arguments "${_arguments_options[@]}" : \
+'--output=[Output format override]:OUTPUT:((table\:"Automatically selected table (default when interactive)"
+json\:"JSON representation suitable for scripting"
+csv\:"Comma separated value export"
+markdown\:"Markdown friendly tables"))' \
+'*--fields=[Additional fields to request from the API]:FIELD:_default' \
+'--status-limit=[Number of recent status updates to show (0 to disable)]:STATUS_LIMIT:_default' \
+'--by-name[Treat the project argument as a name instead of gid]' \
+'--include-members[Include members in the output]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+':project -- Project identifier (gid) or name when --by-name is supplied:_default' \
+&& ret=0
+;;
+(create)
+_arguments "${_arguments_options[@]}" : \
+'--name=[Project name (required unless --interactive or template supplies it)]:NAME:_default' \
+'--workspace=[Workspace identifier]:WORKSPACE:_default' \
+'--team=[Team identifier]:TEAM:_default' \
+'--notes=[Project notes/description]:NOTES:_default' \
+'--color=[Project color slug]:COLOR:_default' \
+'--start-on=[Start date (YYYY-MM-DD)]:START_ON:_default' \
+'--due-on=[Due date (YYYY-MM-DD)]:DUE_ON:_default' \
+'--owner=[Owner identifier (gid or email)]:OWNER:_default' \
+'--public=[Visibility flag]:PUBLIC:(true false)' \
+'--template=[Template name or path]:TEMPLATE:_default' \
+'*--member=[Additional members to add (gid or email)]:USER:_default' \
+'*--custom-field=[Custom field assignments in KEY=VALUE form]:KEY=VALUE:_default' \
+'*--var=[Template variables in KEY=VALUE form]:KEY=VALUE:_default' \
+'--output=[Output format override]:OUTPUT:((table\:"Automatically selected table (default when interactive)"
+json\:"JSON representation suitable for scripting"
+csv\:"Comma separated value export"
+markdown\:"Markdown friendly tables"))' \
+'--interactive[Prompt for missing values interactively]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+&& ret=0
+;;
+(update)
+_arguments "${_arguments_options[@]}" : \
+'--name=[]:NAME:_default' \
+'--notes=[]:NOTES:_default' \
+'--color=[]:COLOR:_default' \
+'--start-on=[]:START_ON:_default' \
+'--due-on=[]:DUE_ON:_default' \
+'--owner=[]:OWNER:_default' \
+'--public=[]:PUBLIC:(true false)' \
+'--output=[]:OUTPUT:((table\:"Automatically selected table (default when interactive)"
+json\:"JSON representation suitable for scripting"
+csv\:"Comma separated value export"
+markdown\:"Markdown friendly tables"))' \
+'--by-name[Treat the project argument as a name]' \
+'(--unarchive)--archive[]' \
+'--unarchive[]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+':project -- Project identifier (gid) or name when --by-name is provided:_default' \
+&& ret=0
+;;
+(delete)
+_arguments "${_arguments_options[@]}" : \
+'--by-name[Treat the project argument as a name]' \
+'--force[Skip confirmation prompts]' \
+'-h[Print help]' \
+'--help[Print help]' \
+':project -- Project identifier (gid) or name when --by-name is provided:_default' \
+&& ret=0
+;;
+(members)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+":: :_asana-cli__project__members_commands" \
+"*::: :->members" \
+&& ret=0
+
+    case $state in
+    (members)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-project-members-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" : \
+'--output=[]:OUTPUT:((table\:"Automatically selected table (default when interactive)"
+json\:"JSON representation suitable for scripting"
+csv\:"Comma separated value export"
+markdown\:"Markdown friendly tables"))' \
+'--by-name[Treat the project argument as a name]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+':project -- Project identifier (gid) or name when --by-name is provided:_default' \
+&& ret=0
+;;
+(add)
+_arguments "${_arguments_options[@]}" : \
+'--role=[]:ROLE:((member\:"Full access"
+commenter\:"Read/write limited to comments"
+viewer\:"View only"))' \
+'--by-name[Treat the project argument as a name]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+':project -- Project identifier (gid) or name when --by-name is provided:_default' \
+'*::members:_default' \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" : \
+'--by-name[Treat the project argument as a name]' \
+'-h[Print help]' \
+'--help[Print help]' \
+':project -- Project identifier (gid) or name when --by-name is provided:_default' \
+'*::members:_default' \
+&& ret=0
+;;
+(update)
+_arguments "${_arguments_options[@]}" : \
+'--membership=[]:MEMBERSHIP:_default' \
+'--member=[]:MEMBER:_default' \
+'--role=[]:ROLE:((member\:"Full access"
+commenter\:"Read/write limited to comments"
+viewer\:"View only"))' \
+'--by-name[Treat the project argument as a name]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+':project -- Project identifier (gid) or name when --by-name is provided:_default' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_asana-cli__project__members__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-project-members-help-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(add)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(update)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_asana-cli__project__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-project-help-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(show)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(create)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(update)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(delete)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(members)
+_arguments "${_arguments_options[@]}" : \
+":: :_asana-cli__project__help__members_commands" \
+"*::: :->members" \
+&& ret=0
+
+    case $state in
+    (members)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-project-help-members-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(add)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(update)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(completions)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+':shell -- Shell to generate completions for:(bash elvish fish powershell zsh)' \
+&& ret=0
+;;
+(manpage)
+_arguments "${_arguments_options[@]}" : \
+'--dir=[Output directory for the generated man page (defaults to stdout)]:DIR:_files' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(doctor)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(update)
+_arguments "${_arguments_options[@]}" : \
+'--version=[Specific version to install]:VERSION:_default' \
+'--install-dir=[Custom installation directory]:INSTALL_DIR:_files' \
+'-f[Force update even if already up-to-date]' \
+'--force[Force update even if already up-to-date]' \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_asana-cli__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-help-command-$line[1]:"
+        case $line[1] in
+            (version)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(license)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(config)
+_arguments "${_arguments_options[@]}" : \
+":: :_asana-cli__help__config_commands" \
+"*::: :->config" \
+&& ret=0
+
+    case $state in
+    (config)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-help-config-command-$line[1]:"
+        case $line[1] in
+            (set)
+_arguments "${_arguments_options[@]}" : \
+":: :_asana-cli__help__config__set_commands" \
+"*::: :->set" \
+&& ret=0
+
+    case $state in
+    (set)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-help-config-set-command-$line[1]:"
+        case $line[1] in
+            (token)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(workspace)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(assignee)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(get)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(test)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(task)
+_arguments "${_arguments_options[@]}" : \
+":: :_asana-cli__help__task_commands" \
+"*::: :->task" \
+&& ret=0
+
+    case $state in
+    (task)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-help-task-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(show)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(create)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(update)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(delete)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(create-batch)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(update-batch)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(complete-batch)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(search)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(subtasks)
+_arguments "${_arguments_options[@]}" : \
+":: :_asana-cli__help__task__subtasks_commands" \
+"*::: :->subtasks" \
+&& ret=0
+
+    case $state in
+    (subtasks)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-help-task-subtasks-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(create)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(convert)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(depends-on)
+_arguments "${_arguments_options[@]}" : \
+":: :_asana-cli__help__task__depends-on_commands" \
+"*::: :->depends-on" \
+&& ret=0
+
+    case $state in
+    (depends-on)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-help-task-depends-on-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(add)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(blocks)
+_arguments "${_arguments_options[@]}" : \
+":: :_asana-cli__help__task__blocks_commands" \
+"*::: :->blocks" \
+&& ret=0
+
+    case $state in
+    (blocks)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-help-task-blocks-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(add)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(projects)
+_arguments "${_arguments_options[@]}" : \
+":: :_asana-cli__help__task__projects_commands" \
+"*::: :->projects" \
+&& ret=0
+
+    case $state in
+    (projects)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-help-task-projects-command-$line[1]:"
+        case $line[1] in
+            (add)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(followers)
+_arguments "${_arguments_options[@]}" : \
+":: :_asana-cli__help__task__followers_commands" \
+"*::: :->followers" \
+&& ret=0
+
+    case $state in
+    (followers)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-help-task-followers-command-$line[1]:"
+        case $line[1] in
+            (add)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(project)
+_arguments "${_arguments_options[@]}" : \
+":: :_asana-cli__help__project_commands" \
+"*::: :->project" \
+&& ret=0
+
+    case $state in
+    (project)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-help-project-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(show)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(create)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(update)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(delete)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(members)
+_arguments "${_arguments_options[@]}" : \
+":: :_asana-cli__help__project__members_commands" \
+"*::: :->members" \
+&& ret=0
+
+    case $state in
+    (members)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:asana-cli-help-project-members-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(add)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(update)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(completions)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(manpage)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(doctor)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(update)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+}
+
+(( $+functions[_asana-cli_commands] )) ||
+_asana-cli_commands() {
+    local commands; commands=(
+'version:Show version information' \
+'license:Show license information' \
+'config:Manage persisted configuration' \
+'task:Task operations' \
+'project:Project operations' \
+'completions:Generate shell completion scripts' \
+'manpage:Generate the man page (roff output)' \
+'doctor:Check health and configuration' \
+'update:Update to the latest version' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'asana-cli commands' commands "$@"
+}
+(( $+functions[_asana-cli__completions_commands] )) ||
+_asana-cli__completions_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli completions commands' commands "$@"
+}
+(( $+functions[_asana-cli__config_commands] )) ||
+_asana-cli__config_commands() {
+    local commands; commands=(
+'set:Store configuration values' \
+'get:Display the current configuration (token redacted)' \
+'test:Validate the stored Personal Access Token against the Asana API' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'asana-cli config commands' commands "$@"
+}
+(( $+functions[_asana-cli__config__get_commands] )) ||
+_asana-cli__config__get_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli config get commands' commands "$@"
+}
+(( $+functions[_asana-cli__config__help_commands] )) ||
+_asana-cli__config__help_commands() {
+    local commands; commands=(
+'set:Store configuration values' \
+'get:Display the current configuration (token redacted)' \
+'test:Validate the stored Personal Access Token against the Asana API' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'asana-cli config help commands' commands "$@"
+}
+(( $+functions[_asana-cli__config__help__get_commands] )) ||
+_asana-cli__config__help__get_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli config help get commands' commands "$@"
+}
+(( $+functions[_asana-cli__config__help__help_commands] )) ||
+_asana-cli__config__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli config help help commands' commands "$@"
+}
+(( $+functions[_asana-cli__config__help__set_commands] )) ||
+_asana-cli__config__help__set_commands() {
+    local commands; commands=(
+'token:Store the Personal Access Token' \
+'workspace:Store the default workspace gid' \
+'assignee:Store the default assignee identifier' \
+    )
+    _describe -t commands 'asana-cli config help set commands' commands "$@"
+}
+(( $+functions[_asana-cli__config__help__set__assignee_commands] )) ||
+_asana-cli__config__help__set__assignee_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli config help set assignee commands' commands "$@"
+}
+(( $+functions[_asana-cli__config__help__set__token_commands] )) ||
+_asana-cli__config__help__set__token_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli config help set token commands' commands "$@"
+}
+(( $+functions[_asana-cli__config__help__set__workspace_commands] )) ||
+_asana-cli__config__help__set__workspace_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli config help set workspace commands' commands "$@"
+}
+(( $+functions[_asana-cli__config__help__test_commands] )) ||
+_asana-cli__config__help__test_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli config help test commands' commands "$@"
+}
+(( $+functions[_asana-cli__config__set_commands] )) ||
+_asana-cli__config__set_commands() {
+    local commands; commands=(
+'token:Store the Personal Access Token' \
+'workspace:Store the default workspace gid' \
+'assignee:Store the default assignee identifier' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'asana-cli config set commands' commands "$@"
+}
+(( $+functions[_asana-cli__config__set__assignee_commands] )) ||
+_asana-cli__config__set__assignee_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli config set assignee commands' commands "$@"
+}
+(( $+functions[_asana-cli__config__set__help_commands] )) ||
+_asana-cli__config__set__help_commands() {
+    local commands; commands=(
+'token:Store the Personal Access Token' \
+'workspace:Store the default workspace gid' \
+'assignee:Store the default assignee identifier' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'asana-cli config set help commands' commands "$@"
+}
+(( $+functions[_asana-cli__config__set__help__assignee_commands] )) ||
+_asana-cli__config__set__help__assignee_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli config set help assignee commands' commands "$@"
+}
+(( $+functions[_asana-cli__config__set__help__help_commands] )) ||
+_asana-cli__config__set__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli config set help help commands' commands "$@"
+}
+(( $+functions[_asana-cli__config__set__help__token_commands] )) ||
+_asana-cli__config__set__help__token_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli config set help token commands' commands "$@"
+}
+(( $+functions[_asana-cli__config__set__help__workspace_commands] )) ||
+_asana-cli__config__set__help__workspace_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli config set help workspace commands' commands "$@"
+}
+(( $+functions[_asana-cli__config__set__token_commands] )) ||
+_asana-cli__config__set__token_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli config set token commands' commands "$@"
+}
+(( $+functions[_asana-cli__config__set__workspace_commands] )) ||
+_asana-cli__config__set__workspace_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli config set workspace commands' commands "$@"
+}
+(( $+functions[_asana-cli__config__test_commands] )) ||
+_asana-cli__config__test_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli config test commands' commands "$@"
+}
+(( $+functions[_asana-cli__doctor_commands] )) ||
+_asana-cli__doctor_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli doctor commands' commands "$@"
+}
+(( $+functions[_asana-cli__help_commands] )) ||
+_asana-cli__help_commands() {
+    local commands; commands=(
+'version:Show version information' \
+'license:Show license information' \
+'config:Manage persisted configuration' \
+'task:Task operations' \
+'project:Project operations' \
+'completions:Generate shell completion scripts' \
+'manpage:Generate the man page (roff output)' \
+'doctor:Check health and configuration' \
+'update:Update to the latest version' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'asana-cli help commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__completions_commands] )) ||
+_asana-cli__help__completions_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help completions commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__config_commands] )) ||
+_asana-cli__help__config_commands() {
+    local commands; commands=(
+'set:Store configuration values' \
+'get:Display the current configuration (token redacted)' \
+'test:Validate the stored Personal Access Token against the Asana API' \
+    )
+    _describe -t commands 'asana-cli help config commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__config__get_commands] )) ||
+_asana-cli__help__config__get_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help config get commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__config__set_commands] )) ||
+_asana-cli__help__config__set_commands() {
+    local commands; commands=(
+'token:Store the Personal Access Token' \
+'workspace:Store the default workspace gid' \
+'assignee:Store the default assignee identifier' \
+    )
+    _describe -t commands 'asana-cli help config set commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__config__set__assignee_commands] )) ||
+_asana-cli__help__config__set__assignee_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help config set assignee commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__config__set__token_commands] )) ||
+_asana-cli__help__config__set__token_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help config set token commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__config__set__workspace_commands] )) ||
+_asana-cli__help__config__set__workspace_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help config set workspace commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__config__test_commands] )) ||
+_asana-cli__help__config__test_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help config test commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__doctor_commands] )) ||
+_asana-cli__help__doctor_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help doctor commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__help_commands] )) ||
+_asana-cli__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help help commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__license_commands] )) ||
+_asana-cli__help__license_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help license commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__manpage_commands] )) ||
+_asana-cli__help__manpage_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help manpage commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__project_commands] )) ||
+_asana-cli__help__project_commands() {
+    local commands; commands=(
+'list:List projects with optional filtering' \
+'show:Display detailed information about a project' \
+'create:Create a new project' \
+'update:Update an existing project' \
+'delete:Delete a project' \
+'members:Manage project members' \
+    )
+    _describe -t commands 'asana-cli help project commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__project__create_commands] )) ||
+_asana-cli__help__project__create_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help project create commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__project__delete_commands] )) ||
+_asana-cli__help__project__delete_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help project delete commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__project__list_commands] )) ||
+_asana-cli__help__project__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help project list commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__project__members_commands] )) ||
+_asana-cli__help__project__members_commands() {
+    local commands; commands=(
+'list:List project members' \
+'add:Add members to the project' \
+'remove:Remove members from the project' \
+'update:Update an existing member'\''s role' \
+    )
+    _describe -t commands 'asana-cli help project members commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__project__members__add_commands] )) ||
+_asana-cli__help__project__members__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help project members add commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__project__members__list_commands] )) ||
+_asana-cli__help__project__members__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help project members list commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__project__members__remove_commands] )) ||
+_asana-cli__help__project__members__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help project members remove commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__project__members__update_commands] )) ||
+_asana-cli__help__project__members__update_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help project members update commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__project__show_commands] )) ||
+_asana-cli__help__project__show_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help project show commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__project__update_commands] )) ||
+_asana-cli__help__project__update_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help project update commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__task_commands] )) ||
+_asana-cli__help__task_commands() {
+    local commands; commands=(
+'list:List tasks with optional filtering' \
+'show:Display detailed information about a task' \
+'create:Create a new task' \
+'update:Update an existing task' \
+'delete:Delete a task' \
+'create-batch:Create multiple tasks from structured input' \
+'update-batch:Update multiple tasks from structured input' \
+'complete-batch:Complete multiple tasks from structured input' \
+'search:Search for tasks with fuzzy matching' \
+'subtasks:Manage subtasks' \
+'depends-on:Manage dependencies (tasks this task depends on)' \
+'blocks:Manage dependents (tasks blocked by this task)' \
+'projects:Manage project memberships' \
+'followers:Manage task followers' \
+    )
+    _describe -t commands 'asana-cli help task commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__task__blocks_commands] )) ||
+_asana-cli__help__task__blocks_commands() {
+    local commands; commands=(
+'list:List dependents' \
+'add:Add dependents' \
+'remove:Remove dependents' \
+    )
+    _describe -t commands 'asana-cli help task blocks commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__task__blocks__add_commands] )) ||
+_asana-cli__help__task__blocks__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help task blocks add commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__task__blocks__list_commands] )) ||
+_asana-cli__help__task__blocks__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help task blocks list commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__task__blocks__remove_commands] )) ||
+_asana-cli__help__task__blocks__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help task blocks remove commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__task__complete-batch_commands] )) ||
+_asana-cli__help__task__complete-batch_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help task complete-batch commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__task__create_commands] )) ||
+_asana-cli__help__task__create_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help task create commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__task__create-batch_commands] )) ||
+_asana-cli__help__task__create-batch_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help task create-batch commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__task__delete_commands] )) ||
+_asana-cli__help__task__delete_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help task delete commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__task__depends-on_commands] )) ||
+_asana-cli__help__task__depends-on_commands() {
+    local commands; commands=(
+'list:List dependencies' \
+'add:Add dependencies' \
+'remove:Remove dependencies' \
+    )
+    _describe -t commands 'asana-cli help task depends-on commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__task__depends-on__add_commands] )) ||
+_asana-cli__help__task__depends-on__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help task depends-on add commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__task__depends-on__list_commands] )) ||
+_asana-cli__help__task__depends-on__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help task depends-on list commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__task__depends-on__remove_commands] )) ||
+_asana-cli__help__task__depends-on__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help task depends-on remove commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__task__followers_commands] )) ||
+_asana-cli__help__task__followers_commands() {
+    local commands; commands=(
+'add:Add followers to the task' \
+'remove:Remove followers from the task' \
+    )
+    _describe -t commands 'asana-cli help task followers commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__task__followers__add_commands] )) ||
+_asana-cli__help__task__followers__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help task followers add commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__task__followers__remove_commands] )) ||
+_asana-cli__help__task__followers__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help task followers remove commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__task__list_commands] )) ||
+_asana-cli__help__task__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help task list commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__task__projects_commands] )) ||
+_asana-cli__help__task__projects_commands() {
+    local commands; commands=(
+'add:Add the task to a project' \
+'remove:Remove the task from a project' \
+    )
+    _describe -t commands 'asana-cli help task projects commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__task__projects__add_commands] )) ||
+_asana-cli__help__task__projects__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help task projects add commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__task__projects__remove_commands] )) ||
+_asana-cli__help__task__projects__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help task projects remove commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__task__search_commands] )) ||
+_asana-cli__help__task__search_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help task search commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__task__show_commands] )) ||
+_asana-cli__help__task__show_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help task show commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__task__subtasks_commands] )) ||
+_asana-cli__help__task__subtasks_commands() {
+    local commands; commands=(
+'list:List subtasks for a parent task' \
+'create:Create a new subtask beneath a parent' \
+'convert:Convert a task to a subtask or detach it' \
+    )
+    _describe -t commands 'asana-cli help task subtasks commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__task__subtasks__convert_commands] )) ||
+_asana-cli__help__task__subtasks__convert_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help task subtasks convert commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__task__subtasks__create_commands] )) ||
+_asana-cli__help__task__subtasks__create_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help task subtasks create commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__task__subtasks__list_commands] )) ||
+_asana-cli__help__task__subtasks__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help task subtasks list commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__task__update_commands] )) ||
+_asana-cli__help__task__update_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help task update commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__task__update-batch_commands] )) ||
+_asana-cli__help__task__update-batch_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help task update-batch commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__update_commands] )) ||
+_asana-cli__help__update_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help update commands' commands "$@"
+}
+(( $+functions[_asana-cli__help__version_commands] )) ||
+_asana-cli__help__version_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli help version commands' commands "$@"
+}
+(( $+functions[_asana-cli__license_commands] )) ||
+_asana-cli__license_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli license commands' commands "$@"
+}
+(( $+functions[_asana-cli__manpage_commands] )) ||
+_asana-cli__manpage_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli manpage commands' commands "$@"
+}
+(( $+functions[_asana-cli__project_commands] )) ||
+_asana-cli__project_commands() {
+    local commands; commands=(
+'list:List projects with optional filtering' \
+'show:Display detailed information about a project' \
+'create:Create a new project' \
+'update:Update an existing project' \
+'delete:Delete a project' \
+'members:Manage project members' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'asana-cli project commands' commands "$@"
+}
+(( $+functions[_asana-cli__project__create_commands] )) ||
+_asana-cli__project__create_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli project create commands' commands "$@"
+}
+(( $+functions[_asana-cli__project__delete_commands] )) ||
+_asana-cli__project__delete_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli project delete commands' commands "$@"
+}
+(( $+functions[_asana-cli__project__help_commands] )) ||
+_asana-cli__project__help_commands() {
+    local commands; commands=(
+'list:List projects with optional filtering' \
+'show:Display detailed information about a project' \
+'create:Create a new project' \
+'update:Update an existing project' \
+'delete:Delete a project' \
+'members:Manage project members' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'asana-cli project help commands' commands "$@"
+}
+(( $+functions[_asana-cli__project__help__create_commands] )) ||
+_asana-cli__project__help__create_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli project help create commands' commands "$@"
+}
+(( $+functions[_asana-cli__project__help__delete_commands] )) ||
+_asana-cli__project__help__delete_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli project help delete commands' commands "$@"
+}
+(( $+functions[_asana-cli__project__help__help_commands] )) ||
+_asana-cli__project__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli project help help commands' commands "$@"
+}
+(( $+functions[_asana-cli__project__help__list_commands] )) ||
+_asana-cli__project__help__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli project help list commands' commands "$@"
+}
+(( $+functions[_asana-cli__project__help__members_commands] )) ||
+_asana-cli__project__help__members_commands() {
+    local commands; commands=(
+'list:List project members' \
+'add:Add members to the project' \
+'remove:Remove members from the project' \
+'update:Update an existing member'\''s role' \
+    )
+    _describe -t commands 'asana-cli project help members commands' commands "$@"
+}
+(( $+functions[_asana-cli__project__help__members__add_commands] )) ||
+_asana-cli__project__help__members__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli project help members add commands' commands "$@"
+}
+(( $+functions[_asana-cli__project__help__members__list_commands] )) ||
+_asana-cli__project__help__members__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli project help members list commands' commands "$@"
+}
+(( $+functions[_asana-cli__project__help__members__remove_commands] )) ||
+_asana-cli__project__help__members__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli project help members remove commands' commands "$@"
+}
+(( $+functions[_asana-cli__project__help__members__update_commands] )) ||
+_asana-cli__project__help__members__update_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli project help members update commands' commands "$@"
+}
+(( $+functions[_asana-cli__project__help__show_commands] )) ||
+_asana-cli__project__help__show_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli project help show commands' commands "$@"
+}
+(( $+functions[_asana-cli__project__help__update_commands] )) ||
+_asana-cli__project__help__update_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli project help update commands' commands "$@"
+}
+(( $+functions[_asana-cli__project__list_commands] )) ||
+_asana-cli__project__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli project list commands' commands "$@"
+}
+(( $+functions[_asana-cli__project__members_commands] )) ||
+_asana-cli__project__members_commands() {
+    local commands; commands=(
+'list:List project members' \
+'add:Add members to the project' \
+'remove:Remove members from the project' \
+'update:Update an existing member'\''s role' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'asana-cli project members commands' commands "$@"
+}
+(( $+functions[_asana-cli__project__members__add_commands] )) ||
+_asana-cli__project__members__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli project members add commands' commands "$@"
+}
+(( $+functions[_asana-cli__project__members__help_commands] )) ||
+_asana-cli__project__members__help_commands() {
+    local commands; commands=(
+'list:List project members' \
+'add:Add members to the project' \
+'remove:Remove members from the project' \
+'update:Update an existing member'\''s role' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'asana-cli project members help commands' commands "$@"
+}
+(( $+functions[_asana-cli__project__members__help__add_commands] )) ||
+_asana-cli__project__members__help__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli project members help add commands' commands "$@"
+}
+(( $+functions[_asana-cli__project__members__help__help_commands] )) ||
+_asana-cli__project__members__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli project members help help commands' commands "$@"
+}
+(( $+functions[_asana-cli__project__members__help__list_commands] )) ||
+_asana-cli__project__members__help__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli project members help list commands' commands "$@"
+}
+(( $+functions[_asana-cli__project__members__help__remove_commands] )) ||
+_asana-cli__project__members__help__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli project members help remove commands' commands "$@"
+}
+(( $+functions[_asana-cli__project__members__help__update_commands] )) ||
+_asana-cli__project__members__help__update_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli project members help update commands' commands "$@"
+}
+(( $+functions[_asana-cli__project__members__list_commands] )) ||
+_asana-cli__project__members__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli project members list commands' commands "$@"
+}
+(( $+functions[_asana-cli__project__members__remove_commands] )) ||
+_asana-cli__project__members__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli project members remove commands' commands "$@"
+}
+(( $+functions[_asana-cli__project__members__update_commands] )) ||
+_asana-cli__project__members__update_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli project members update commands' commands "$@"
+}
+(( $+functions[_asana-cli__project__show_commands] )) ||
+_asana-cli__project__show_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli project show commands' commands "$@"
+}
+(( $+functions[_asana-cli__project__update_commands] )) ||
+_asana-cli__project__update_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli project update commands' commands "$@"
+}
+(( $+functions[_asana-cli__task_commands] )) ||
+_asana-cli__task_commands() {
+    local commands; commands=(
+'list:List tasks with optional filtering' \
+'show:Display detailed information about a task' \
+'create:Create a new task' \
+'update:Update an existing task' \
+'delete:Delete a task' \
+'create-batch:Create multiple tasks from structured input' \
+'update-batch:Update multiple tasks from structured input' \
+'complete-batch:Complete multiple tasks from structured input' \
+'search:Search for tasks with fuzzy matching' \
+'subtasks:Manage subtasks' \
+'depends-on:Manage dependencies (tasks this task depends on)' \
+'blocks:Manage dependents (tasks blocked by this task)' \
+'projects:Manage project memberships' \
+'followers:Manage task followers' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'asana-cli task commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__blocks_commands] )) ||
+_asana-cli__task__blocks_commands() {
+    local commands; commands=(
+'list:List dependents' \
+'add:Add dependents' \
+'remove:Remove dependents' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'asana-cli task blocks commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__blocks__add_commands] )) ||
+_asana-cli__task__blocks__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task blocks add commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__blocks__help_commands] )) ||
+_asana-cli__task__blocks__help_commands() {
+    local commands; commands=(
+'list:List dependents' \
+'add:Add dependents' \
+'remove:Remove dependents' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'asana-cli task blocks help commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__blocks__help__add_commands] )) ||
+_asana-cli__task__blocks__help__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task blocks help add commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__blocks__help__help_commands] )) ||
+_asana-cli__task__blocks__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task blocks help help commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__blocks__help__list_commands] )) ||
+_asana-cli__task__blocks__help__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task blocks help list commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__blocks__help__remove_commands] )) ||
+_asana-cli__task__blocks__help__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task blocks help remove commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__blocks__list_commands] )) ||
+_asana-cli__task__blocks__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task blocks list commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__blocks__remove_commands] )) ||
+_asana-cli__task__blocks__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task blocks remove commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__complete-batch_commands] )) ||
+_asana-cli__task__complete-batch_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task complete-batch commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__create_commands] )) ||
+_asana-cli__task__create_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task create commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__create-batch_commands] )) ||
+_asana-cli__task__create-batch_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task create-batch commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__delete_commands] )) ||
+_asana-cli__task__delete_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task delete commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__depends-on_commands] )) ||
+_asana-cli__task__depends-on_commands() {
+    local commands; commands=(
+'list:List dependencies' \
+'add:Add dependencies' \
+'remove:Remove dependencies' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'asana-cli task depends-on commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__depends-on__add_commands] )) ||
+_asana-cli__task__depends-on__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task depends-on add commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__depends-on__help_commands] )) ||
+_asana-cli__task__depends-on__help_commands() {
+    local commands; commands=(
+'list:List dependencies' \
+'add:Add dependencies' \
+'remove:Remove dependencies' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'asana-cli task depends-on help commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__depends-on__help__add_commands] )) ||
+_asana-cli__task__depends-on__help__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task depends-on help add commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__depends-on__help__help_commands] )) ||
+_asana-cli__task__depends-on__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task depends-on help help commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__depends-on__help__list_commands] )) ||
+_asana-cli__task__depends-on__help__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task depends-on help list commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__depends-on__help__remove_commands] )) ||
+_asana-cli__task__depends-on__help__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task depends-on help remove commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__depends-on__list_commands] )) ||
+_asana-cli__task__depends-on__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task depends-on list commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__depends-on__remove_commands] )) ||
+_asana-cli__task__depends-on__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task depends-on remove commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__followers_commands] )) ||
+_asana-cli__task__followers_commands() {
+    local commands; commands=(
+'add:Add followers to the task' \
+'remove:Remove followers from the task' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'asana-cli task followers commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__followers__add_commands] )) ||
+_asana-cli__task__followers__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task followers add commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__followers__help_commands] )) ||
+_asana-cli__task__followers__help_commands() {
+    local commands; commands=(
+'add:Add followers to the task' \
+'remove:Remove followers from the task' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'asana-cli task followers help commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__followers__help__add_commands] )) ||
+_asana-cli__task__followers__help__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task followers help add commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__followers__help__help_commands] )) ||
+_asana-cli__task__followers__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task followers help help commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__followers__help__remove_commands] )) ||
+_asana-cli__task__followers__help__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task followers help remove commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__followers__remove_commands] )) ||
+_asana-cli__task__followers__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task followers remove commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__help_commands] )) ||
+_asana-cli__task__help_commands() {
+    local commands; commands=(
+'list:List tasks with optional filtering' \
+'show:Display detailed information about a task' \
+'create:Create a new task' \
+'update:Update an existing task' \
+'delete:Delete a task' \
+'create-batch:Create multiple tasks from structured input' \
+'update-batch:Update multiple tasks from structured input' \
+'complete-batch:Complete multiple tasks from structured input' \
+'search:Search for tasks with fuzzy matching' \
+'subtasks:Manage subtasks' \
+'depends-on:Manage dependencies (tasks this task depends on)' \
+'blocks:Manage dependents (tasks blocked by this task)' \
+'projects:Manage project memberships' \
+'followers:Manage task followers' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'asana-cli task help commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__help__blocks_commands] )) ||
+_asana-cli__task__help__blocks_commands() {
+    local commands; commands=(
+'list:List dependents' \
+'add:Add dependents' \
+'remove:Remove dependents' \
+    )
+    _describe -t commands 'asana-cli task help blocks commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__help__blocks__add_commands] )) ||
+_asana-cli__task__help__blocks__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task help blocks add commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__help__blocks__list_commands] )) ||
+_asana-cli__task__help__blocks__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task help blocks list commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__help__blocks__remove_commands] )) ||
+_asana-cli__task__help__blocks__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task help blocks remove commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__help__complete-batch_commands] )) ||
+_asana-cli__task__help__complete-batch_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task help complete-batch commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__help__create_commands] )) ||
+_asana-cli__task__help__create_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task help create commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__help__create-batch_commands] )) ||
+_asana-cli__task__help__create-batch_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task help create-batch commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__help__delete_commands] )) ||
+_asana-cli__task__help__delete_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task help delete commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__help__depends-on_commands] )) ||
+_asana-cli__task__help__depends-on_commands() {
+    local commands; commands=(
+'list:List dependencies' \
+'add:Add dependencies' \
+'remove:Remove dependencies' \
+    )
+    _describe -t commands 'asana-cli task help depends-on commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__help__depends-on__add_commands] )) ||
+_asana-cli__task__help__depends-on__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task help depends-on add commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__help__depends-on__list_commands] )) ||
+_asana-cli__task__help__depends-on__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task help depends-on list commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__help__depends-on__remove_commands] )) ||
+_asana-cli__task__help__depends-on__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task help depends-on remove commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__help__followers_commands] )) ||
+_asana-cli__task__help__followers_commands() {
+    local commands; commands=(
+'add:Add followers to the task' \
+'remove:Remove followers from the task' \
+    )
+    _describe -t commands 'asana-cli task help followers commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__help__followers__add_commands] )) ||
+_asana-cli__task__help__followers__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task help followers add commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__help__followers__remove_commands] )) ||
+_asana-cli__task__help__followers__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task help followers remove commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__help__help_commands] )) ||
+_asana-cli__task__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task help help commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__help__list_commands] )) ||
+_asana-cli__task__help__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task help list commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__help__projects_commands] )) ||
+_asana-cli__task__help__projects_commands() {
+    local commands; commands=(
+'add:Add the task to a project' \
+'remove:Remove the task from a project' \
+    )
+    _describe -t commands 'asana-cli task help projects commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__help__projects__add_commands] )) ||
+_asana-cli__task__help__projects__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task help projects add commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__help__projects__remove_commands] )) ||
+_asana-cli__task__help__projects__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task help projects remove commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__help__search_commands] )) ||
+_asana-cli__task__help__search_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task help search commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__help__show_commands] )) ||
+_asana-cli__task__help__show_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task help show commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__help__subtasks_commands] )) ||
+_asana-cli__task__help__subtasks_commands() {
+    local commands; commands=(
+'list:List subtasks for a parent task' \
+'create:Create a new subtask beneath a parent' \
+'convert:Convert a task to a subtask or detach it' \
+    )
+    _describe -t commands 'asana-cli task help subtasks commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__help__subtasks__convert_commands] )) ||
+_asana-cli__task__help__subtasks__convert_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task help subtasks convert commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__help__subtasks__create_commands] )) ||
+_asana-cli__task__help__subtasks__create_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task help subtasks create commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__help__subtasks__list_commands] )) ||
+_asana-cli__task__help__subtasks__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task help subtasks list commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__help__update_commands] )) ||
+_asana-cli__task__help__update_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task help update commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__help__update-batch_commands] )) ||
+_asana-cli__task__help__update-batch_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task help update-batch commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__list_commands] )) ||
+_asana-cli__task__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task list commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__projects_commands] )) ||
+_asana-cli__task__projects_commands() {
+    local commands; commands=(
+'add:Add the task to a project' \
+'remove:Remove the task from a project' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'asana-cli task projects commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__projects__add_commands] )) ||
+_asana-cli__task__projects__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task projects add commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__projects__help_commands] )) ||
+_asana-cli__task__projects__help_commands() {
+    local commands; commands=(
+'add:Add the task to a project' \
+'remove:Remove the task from a project' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'asana-cli task projects help commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__projects__help__add_commands] )) ||
+_asana-cli__task__projects__help__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task projects help add commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__projects__help__help_commands] )) ||
+_asana-cli__task__projects__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task projects help help commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__projects__help__remove_commands] )) ||
+_asana-cli__task__projects__help__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task projects help remove commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__projects__remove_commands] )) ||
+_asana-cli__task__projects__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task projects remove commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__search_commands] )) ||
+_asana-cli__task__search_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task search commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__show_commands] )) ||
+_asana-cli__task__show_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task show commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__subtasks_commands] )) ||
+_asana-cli__task__subtasks_commands() {
+    local commands; commands=(
+'list:List subtasks for a parent task' \
+'create:Create a new subtask beneath a parent' \
+'convert:Convert a task to a subtask or detach it' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'asana-cli task subtasks commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__subtasks__convert_commands] )) ||
+_asana-cli__task__subtasks__convert_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task subtasks convert commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__subtasks__create_commands] )) ||
+_asana-cli__task__subtasks__create_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task subtasks create commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__subtasks__help_commands] )) ||
+_asana-cli__task__subtasks__help_commands() {
+    local commands; commands=(
+'list:List subtasks for a parent task' \
+'create:Create a new subtask beneath a parent' \
+'convert:Convert a task to a subtask or detach it' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'asana-cli task subtasks help commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__subtasks__help__convert_commands] )) ||
+_asana-cli__task__subtasks__help__convert_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task subtasks help convert commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__subtasks__help__create_commands] )) ||
+_asana-cli__task__subtasks__help__create_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task subtasks help create commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__subtasks__help__help_commands] )) ||
+_asana-cli__task__subtasks__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task subtasks help help commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__subtasks__help__list_commands] )) ||
+_asana-cli__task__subtasks__help__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task subtasks help list commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__subtasks__list_commands] )) ||
+_asana-cli__task__subtasks__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task subtasks list commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__update_commands] )) ||
+_asana-cli__task__update_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task update commands' commands "$@"
+}
+(( $+functions[_asana-cli__task__update-batch_commands] )) ||
+_asana-cli__task__update-batch_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli task update-batch commands' commands "$@"
+}
+(( $+functions[_asana-cli__update_commands] )) ||
+_asana-cli__update_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli update commands' commands "$@"
+}
+(( $+functions[_asana-cli__version_commands] )) ||
+_asana-cli__version_commands() {
+    local commands; commands=()
+    _describe -t commands 'asana-cli version commands' commands "$@"
+}
+
+if [ "$funcstack[1]" = "_asana-cli" ]; then
+    _asana-cli "$@"
+else
+    compdef _asana-cli asana-cli
+fi

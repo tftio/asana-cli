@@ -1,0 +1,50 @@
+# Aggressive cargo-deny configuration for Asana Cli project
+# Enforces strict security, licensing, and dependency policies
+
+[graph]
+# Check all features to ensure comprehensive coverage
+all-features = true
+
+# Advisory checks guard against known vulnerabilities
+[advisories]
+# Use git CLI for better authentication support
+git-fetch-with-cli = true
+
+[licenses]
+# Strictly control allowed licenses
+allow = ["MIT", "Apache-2.0", "MPL-2.0", "Unicode-3.0", "CC0-1.0"]
+
+# High confidence threshold for license detection
+confidence-threshold = 0.9
+
+[licenses.private]
+# Do not ignore unpublished crates
+ignore = false
+registries = [
+  #"https://example.com/private-registry"
+]
+
+# Dependency bans configuration
+[bans]
+# Warn on multiple versions but allow Windows ecosystem duplicates
+multiple-versions = "warn"
+wildcards = "deny"
+
+skip = [
+  { crate = "windows-sys" },
+  { crate = "windows-targets" },
+  { crate = "windows_aarch64_gnullvm" },
+  { crate = "windows_aarch64_msvc" },
+  { crate = "windows_i686_gnu" },
+  { crate = "windows_i686_gnullvm" },
+  { crate = "windows_i686_msvc" },
+  { crate = "windows_x86_64_gnu" },
+  { crate = "windows_x86_64_gnullvm" },
+  { crate = "windows_x86_64_msvc" },
+]
+
+[sources]
+# Only allow crates.io
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
