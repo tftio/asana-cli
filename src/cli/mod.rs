@@ -125,6 +125,15 @@ enum ConfigSetCommand {
         #[arg(long)]
         clear: bool,
     },
+    /// Store the default project identifier.
+    Project {
+        /// Project gid to use when none is supplied on the command line.
+        #[arg(long, value_name = "GID")]
+        project: Option<String>,
+        /// Clear the stored default project.
+        #[arg(long)]
+        clear: bool,
+    },
 }
 
 /// Parse and execute CLI commands, returning the desired process exit code.
@@ -321,6 +330,27 @@ fn handle_config_set(command: ConfigSetCommand, config: &mut Config) -> Result<(
             println!("Default assignee stored in configuration file.");
             Ok(())
         }
+        ConfigSetCommand::Project { project, clear } => {
+            if clear {
+                config
+                    .set_default_project(None)
+                    .context("failed to clear default project")?;
+                println!("Default project cleared.");
+                return Ok(());
+            }
+
+            let value = project
+                .as_deref()
+                .map(str::trim)
+                .filter(|value| !value.is_empty())
+                .ok_or_else(|| anyhow!("provide --project <gid> or use --clear"))?;
+
+            config
+                .set_default_project(Some(value.to_string()))
+                .context("failed to store default project")?;
+            println!("Default project stored in configuration file.");
+            Ok(())
+        }
     }
 }
 
@@ -339,6 +369,13 @@ fn handle_config_get(config: &Config) {
         config
             .default_assignee()
             .filter(|assignee| !assignee.is_empty())
+            .unwrap_or("not set")
+    );
+    println!(
+        "Default project: {}",
+        config
+            .default_project()
+            .filter(|project| !project.is_empty())
             .unwrap_or("not set")
     );
 

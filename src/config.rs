@@ -21,6 +21,7 @@ const ENV_TOKEN: &str = "ASANA_PAT";
 const ENV_BASE_URL: &str = "ASANA_BASE_URL";
 const ENV_WORKSPACE: &str = "ASANA_WORKSPACE";
 const ENV_ASSIGNEE: &str = "ASANA_ASSIGNEE";
+const ENV_PROJECT: &str = "ASANA_PROJECT";
 const ENV_CONFIG_HOME: &str = "ASANA_CLI_CONFIG_HOME";
 const ENV_DATA_HOME: &str = "ASANA_CLI_DATA_HOME";
 /// Default Asana API base URL when no override is provided.
@@ -36,6 +37,8 @@ pub struct FileConfig {
     pub default_workspace: Option<String>,
     /// Preferred default assignee identifier (email or gid).
     pub default_assignee: Option<String>,
+    /// Preferred default project identifier.
+    pub default_project: Option<String>,
     /// Stored Personal Access Token (if persisted on disk).
     pub personal_access_token: Option<String>,
 }
@@ -46,6 +49,7 @@ impl fmt::Debug for FileConfig {
             .field("api_base_url", &self.api_base_url)
             .field("default_workspace", &self.default_workspace)
             .field("default_assignee", &self.default_assignee)
+            .field("default_project", &self.default_project)
             .field(
                 "personal_access_token",
                 &self.personal_access_token.as_ref().map(|_| "REDACTED"),
@@ -162,6 +166,21 @@ impl Config {
     /// Update the stored default assignee identifier.
     pub fn set_default_assignee(&mut self, assignee: Option<String>) -> Result<()> {
         self.file.default_assignee = assignee;
+        self.save()
+    }
+
+    /// Return the default project identifier.
+    #[must_use]
+    pub fn default_project(&self) -> Option<&str> {
+        self.overrides
+            .default_project
+            .as_deref()
+            .or(self.file.default_project.as_deref())
+    }
+
+    /// Update the stored default project identifier.
+    pub fn set_default_project(&mut self, project: Option<String>) -> Result<()> {
+        self.file.default_project = project;
         self.save()
     }
 
@@ -311,6 +330,7 @@ struct Overrides {
     api_base_url: Option<String>,
     default_workspace: Option<String>,
     default_assignee: Option<String>,
+    default_project: Option<String>,
     personal_access_token: Option<SecretString>,
 }
 
@@ -320,6 +340,7 @@ impl fmt::Debug for Overrides {
             .field("api_base_url", &self.api_base_url)
             .field("default_workspace", &self.default_workspace)
             .field("default_assignee", &self.default_assignee)
+            .field("default_project", &self.default_project)
             .field(
                 "personal_access_token",
                 &self.personal_access_token.as_ref().map(|_| "REDACTED"),
@@ -334,6 +355,7 @@ impl Overrides {
             api_base_url: env::var(ENV_BASE_URL).ok(),
             default_workspace: env::var(ENV_WORKSPACE).ok(),
             default_assignee: env::var(ENV_ASSIGNEE).ok(),
+            default_project: env::var(ENV_PROJECT).ok(),
             personal_access_token: env::var(ENV_TOKEN).ok().map(SecretString::new),
         }
     }
@@ -432,6 +454,7 @@ mod tests {
         remove_env(ENV_BASE_URL);
         remove_env(ENV_WORKSPACE);
         remove_env(ENV_ASSIGNEE);
+        remove_env(ENV_PROJECT);
     }
 
     #[test]
