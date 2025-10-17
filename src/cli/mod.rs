@@ -234,24 +234,20 @@ fn print_license() {
 }
 
 fn write_manpage(dir: Option<PathBuf>) -> Result<()> {
-    match dir {
-        Some(path) => {
-            fs::create_dir_all(&path).with_context(|| {
-                format!("failed to create manpage directory {}", path.display())
-            })?;
-            let output = path.join("asana-cli.1");
-            let mut file = File::create(&output)
-                .with_context(|| format!("failed to create manpage file {}", output.display()))?;
-            write!(file, "{}", MANPAGE_SOURCE)
-                .map_err(|err| anyhow!("failed to write manpage: {err}"))?;
-            println!("Man page written to {}", output.display());
-        }
-        None => {
-            let stdout = io::stdout();
-            let mut handle = stdout.lock();
-            write!(handle, "{}", MANPAGE_SOURCE)
-                .map_err(|err| anyhow!("failed to write manpage: {err}"))?;
-        }
+    if let Some(path) = dir {
+        fs::create_dir_all(&path)
+            .with_context(|| format!("failed to create manpage directory {}", path.display()))?;
+        let output = path.join("asana-cli.1");
+        let mut file = File::create(&output)
+            .with_context(|| format!("failed to create manpage file {}", output.display()))?;
+        write!(file, "{MANPAGE_SOURCE}")
+            .map_err(|err| anyhow!("failed to write manpage: {err}"))?;
+        println!("Man page written to {}", output.display());
+    } else {
+        let stdout = io::stdout();
+        let mut handle = stdout.lock();
+        write!(handle, "{MANPAGE_SOURCE}")
+            .map_err(|err| anyhow!("failed to write manpage: {err}"))?;
     }
 
     Ok(())
@@ -379,19 +375,17 @@ fn handle_config_get(config: &Config) {
             .unwrap_or("not set")
     );
 
-    match config.personal_access_token() {
-        Ok(Some(_token)) => {
-            let status = if config.environment_token_available() {
-                "provided via environment variable"
-            } else if config.has_persisted_token() {
-                "stored in configuration file"
-            } else {
-                "available"
-            };
-            println!("Personal Access Token: {status}");
-        }
-        Ok(None) => println!("Personal Access Token: not set"),
-        Err(err) => println!("Personal Access Token: unavailable ({err})"),
+    if let Some(_token) = config.personal_access_token() {
+        let status = if config.environment_token_available() {
+            "provided via environment variable"
+        } else if config.has_persisted_token() {
+            "stored in configuration file"
+        } else {
+            "available"
+        };
+        println!("Personal Access Token: {status}");
+    } else {
+        println!("Personal Access Token: not set");
     }
 }
 
@@ -430,7 +424,7 @@ fn handle_config_test(config: &Config) -> Result<()> {
 }
 
 pub(super) fn build_api_client(config: &Config) -> Result<ApiClient> {
-    let token = config.personal_access_token()?.ok_or_else(|| {
+    let token = config.personal_access_token().ok_or_else(|| {
         anyhow!("no Personal Access Token found; run `asana-cli config set token`")
     })?;
 

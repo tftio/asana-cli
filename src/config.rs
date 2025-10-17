@@ -149,6 +149,10 @@ impl Config {
     }
 
     /// Update the stored default workspace identifier.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the configuration file cannot be saved to disk.
     pub fn set_default_workspace(&mut self, workspace: Option<String>) -> Result<()> {
         self.file.default_workspace = workspace;
         self.save()
@@ -164,6 +168,10 @@ impl Config {
     }
 
     /// Update the stored default assignee identifier.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the configuration file cannot be saved to disk.
     pub fn set_default_assignee(&mut self, assignee: Option<String>) -> Result<()> {
         self.file.default_assignee = assignee;
         self.save()
@@ -179,6 +187,10 @@ impl Config {
     }
 
     /// Update the stored default project identifier.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the configuration file cannot be saved to disk.
     pub fn set_default_project(&mut self, project: Option<String>) -> Result<()> {
         self.file.default_project = project;
         self.save()
@@ -223,20 +235,18 @@ impl Config {
     }
 
     /// Retrieve the Personal Access Token, taking environment overrides into account.
-    ///
-    /// # Errors
-    /// Returns an error when configuration access fails.
-    pub fn personal_access_token(&self) -> Result<Option<SecretString>> {
+    #[must_use]
+    pub fn personal_access_token(&self) -> Option<SecretString> {
         if let Some(token) = self.overrides.personal_access_token.clone() {
-            return Ok(Some(token));
+            return Some(token);
         }
-        Ok(self.file.personal_access_token.as_ref().and_then(|value| {
+        self.file.personal_access_token.as_ref().and_then(|value| {
             if value.trim().is_empty() {
                 None
             } else {
                 Some(SecretString::new(value.clone()))
             }
-        }))
+        })
     }
 
     /// Remove any stored Personal Access Token.
@@ -471,7 +481,7 @@ mod tests {
                 !cfg.path().exists(),
                 "config file should not be created automatically"
             );
-            assert!(cfg.personal_access_token().unwrap().is_none());
+            assert!(cfg.personal_access_token().is_none());
             assert!(cfg.api_base_url().is_none());
         });
     }
@@ -499,10 +509,7 @@ mod tests {
             assert_eq!(cfg.api_base_url(), Some("https://override.example.com"));
             assert_eq!(cfg.default_workspace(), Some("workspace-123"));
             assert_eq!(cfg.default_assignee(), Some("owner@example.com"));
-            let token = cfg
-                .personal_access_token()
-                .expect("load token")
-                .expect("token present");
+            let token = cfg.personal_access_token().expect("token present");
             assert_eq!(token.expose_secret(), "env-token");
         });
     }
@@ -520,7 +527,7 @@ mod tests {
                 .expect("store token");
 
             let reloaded = Config::load().expect("reload config");
-            let loaded = reloaded.personal_access_token().expect("load token");
+            let loaded = reloaded.personal_access_token();
             assert_eq!(
                 loaded.as_ref().map(|s| s.expose_secret().to_string()),
                 Some("token-value".into())

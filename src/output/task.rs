@@ -106,9 +106,16 @@ pub fn render_task_detail(task: &Task, format: TaskOutputFormat, tty: bool) -> R
 
 fn render_task_detail_table(task: &Task, style: TableStyleKind) -> String {
     let mut rows = Vec::new();
+    add_basic_task_rows(&mut rows, task);
+    add_collection_rows(&mut rows, task);
+    add_optional_content_rows(&mut rows, task);
+    build_detail_table(rows, style)
+}
+
+fn add_basic_task_rows(rows: &mut Vec<KeyValueRow>, task: &Task) {
     rows.push(KeyValueRow::new("GID", &task.gid));
     rows.push(KeyValueRow::new("Name", &task.name));
-    rows.push(KeyValueRow::new("Completed", &task.completed.to_string()));
+    rows.push(KeyValueRow::new("Completed", task.completed.to_string()));
     if let Some(completed_at) = task.completed_at.as_ref() {
         rows.push(KeyValueRow::new("Completed At", completed_at));
     }
@@ -119,7 +126,7 @@ fn render_task_detail_table(task: &Task, style: TableStyleKind) -> String {
         ));
     }
     if let Some(workspace) = task.workspace.as_ref() {
-        rows.push(KeyValueRow::new("Workspace", &workspace.label()));
+        rows.push(KeyValueRow::new("Workspace", workspace.label()));
     }
     if let Some(due_on) = task.due_on.as_ref() {
         rows.push(KeyValueRow::new("Due On", due_on));
@@ -134,13 +141,16 @@ fn render_task_detail_table(task: &Task, style: TableStyleKind) -> String {
         rows.push(KeyValueRow::new("Start At", start_at));
     }
     if let Some(parent) = task.parent.as_ref() {
-        rows.push(KeyValueRow::new("Parent", &parent.label()));
+        rows.push(KeyValueRow::new("Parent", parent.label()));
     }
+}
+
+fn add_collection_rows(rows: &mut Vec<KeyValueRow>, task: &Task) {
     if !task.projects.is_empty() {
         let summary = task
             .projects
             .iter()
-            .map(|project| project.label())
+            .map(crate::models::task::TaskProjectReference::label)
             .collect::<Vec<_>>()
             .join(", ");
         rows.push(KeyValueRow::new("Projects", &summary));
@@ -149,7 +159,7 @@ fn render_task_detail_table(task: &Task, style: TableStyleKind) -> String {
         let summary = task
             .tags
             .iter()
-            .map(|tag| tag.label())
+            .map(crate::models::task::TaskTagReference::label)
             .collect::<Vec<_>>()
             .join(", ");
         rows.push(KeyValueRow::new("Tags", &summary));
@@ -158,7 +168,7 @@ fn render_task_detail_table(task: &Task, style: TableStyleKind) -> String {
         let summary = task
             .followers
             .iter()
-            .map(|user| format_user_with_email(user))
+            .map(format_user_with_email)
             .collect::<Vec<_>>()
             .join(", ");
         rows.push(KeyValueRow::new("Followers", summary));
@@ -167,7 +177,7 @@ fn render_task_detail_table(task: &Task, style: TableStyleKind) -> String {
         let summary = task
             .dependencies
             .iter()
-            .map(|reference| reference.label())
+            .map(crate::models::task::TaskReference::label)
             .collect::<Vec<_>>()
             .join(", ");
         rows.push(KeyValueRow::new("Depends On", &summary));
@@ -176,11 +186,14 @@ fn render_task_detail_table(task: &Task, style: TableStyleKind) -> String {
         let summary = task
             .dependents
             .iter()
-            .map(|reference| reference.label())
+            .map(crate::models::task::TaskReference::label)
             .collect::<Vec<_>>()
             .join(", ");
         rows.push(KeyValueRow::new("Blocks", &summary));
     }
+}
+
+fn add_optional_content_rows(rows: &mut Vec<KeyValueRow>, task: &Task) {
     if let Some(permalink) = task.permalink_url.as_ref() {
         rows.push(KeyValueRow::new("Permalink", permalink));
     }
@@ -196,7 +209,7 @@ fn render_task_detail_table(task: &Task, style: TableStyleKind) -> String {
     }
     if !task.custom_fields.is_empty() {
         for field in &task.custom_fields {
-            rows.push(KeyValueRow::new(&field.name, &custom_field_display(field)));
+            rows.push(KeyValueRow::new(&field.name, custom_field_display(field)));
         }
     }
     if !task.attachments.is_empty() {
@@ -217,7 +230,9 @@ fn render_task_detail_table(task: &Task, style: TableStyleKind) -> String {
             .join("\n");
         rows.push(KeyValueRow::new("Attachments", &summary));
     }
+}
 
+fn build_detail_table(rows: Vec<KeyValueRow>, style: TableStyleKind) -> String {
     let mut table = Table::new(rows);
     apply_style(&mut table, style);
     table.with(Modify::new(Rows::first()).with(Alignment::center()));
@@ -263,7 +278,7 @@ fn render_task_detail_csv(task: &Task) -> Result<String> {
         let summary = task
             .projects
             .iter()
-            .map(|project| project.label())
+            .map(crate::models::task::TaskProjectReference::label)
             .collect::<Vec<_>>()
             .join(", ");
         push("projects", &summary)?;
@@ -272,7 +287,7 @@ fn render_task_detail_csv(task: &Task) -> Result<String> {
         let summary = task
             .tags
             .iter()
-            .map(|tag| tag.label())
+            .map(crate::models::task::TaskTagReference::label)
             .collect::<Vec<_>>()
             .join(", ");
         push("tags", &summary)?;
@@ -281,7 +296,7 @@ fn render_task_detail_csv(task: &Task) -> Result<String> {
         let summary = task
             .followers
             .iter()
-            .map(|user| format_user_with_email(user))
+            .map(format_user_with_email)
             .collect::<Vec<_>>()
             .join(", ");
         push("followers", &summary)?;
@@ -298,7 +313,7 @@ fn render_task_detail_csv(task: &Task) -> Result<String> {
         let summary = task
             .dependencies
             .iter()
-            .map(|reference| reference.label())
+            .map(crate::models::task::TaskReference::label)
             .collect::<Vec<_>>()
             .join(", ");
         push("depends_on", &summary)?;
@@ -307,7 +322,7 @@ fn render_task_detail_csv(task: &Task) -> Result<String> {
         let summary = task
             .dependents
             .iter()
-            .map(|reference| reference.label())
+            .map(crate::models::task::TaskReference::label)
             .collect::<Vec<_>>()
             .join(", ");
         push("blocks", &summary)?;
@@ -397,13 +412,11 @@ impl From<&Task> for TaskRow {
             assignee: task
                 .assignee
                 .as_ref()
-                .map(|user| user.label())
-                .unwrap_or_else(|| "-".into()),
-            project: task
-                .projects
-                .first()
-                .map(|project| project.label())
-                .unwrap_or_else(|| "-".into()),
+                .map_or_else(|| "-".into(), crate::models::user::UserReference::label),
+            project: task.projects.first().map_or_else(
+                || "-".into(),
+                crate::models::task::TaskProjectReference::label,
+            ),
         }
     }
 }

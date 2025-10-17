@@ -233,7 +233,7 @@ impl Task {
 }
 
 /// Parameters for listing tasks via the API.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct TaskListParams {
     /// Workspace filter.
     pub workspace: Option<String>,
@@ -263,27 +263,6 @@ pub struct TaskListParams {
     pub due_before: Option<String>,
     /// Post-fetch due date lower bound (inclusive, YYYY-MM-DD).
     pub due_after: Option<String>,
-}
-
-impl Default for TaskListParams {
-    fn default() -> Self {
-        Self {
-            workspace: None,
-            project: None,
-            section: None,
-            assignee: None,
-            completed_since: None,
-            modified_since: None,
-            due_on: None,
-            include_subtasks: false,
-            limit: None,
-            fields: BTreeSet::new(),
-            sort: None,
-            completed: None,
-            due_before: None,
-            due_after: None,
-        }
-    }
 }
 
 impl TaskListParams {
@@ -328,10 +307,10 @@ impl TaskListParams {
             tasks.retain(|task| task.completed == expected);
         }
         if let Some(due_before) = &self.due_before {
-            tasks.retain(|task| task.due_on.as_ref().map_or(false, |due| due <= due_before));
+            tasks.retain(|task| task.due_on.as_ref().is_some_and(|due| due <= due_before));
         }
         if let Some(due_after) = &self.due_after {
-            tasks.retain(|task| task.due_on.as_ref().map_or(false, |due| due >= due_after));
+            tasks.retain(|task| task.due_on.as_ref().is_some_and(|due| due >= due_after));
         }
     }
 }
@@ -576,6 +555,16 @@ impl TaskCreateBuilder {
 }
 
 /// Payload for updating existing tasks.
+///
+/// Uses `Option<Option<T>>` for certain fields to distinguish three API states:
+/// - `None`: Don't update field (omit from JSON payload)
+/// - `Some(None)`: Clear field (send `null` in JSON to remove value)
+/// - `Some(Some(value))`: Set field to new value
+///
+/// This is required by the Asana API which treats missing fields differently from
+/// explicit `null` values. Omitting a field preserves its current value, while
+/// sending `null` clears it.
+#[allow(clippy::option_option)]
 #[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct TaskUpdateData {

@@ -153,9 +153,9 @@ impl CustomFieldValue {
     pub fn into_value(self) -> Value {
         match self {
             Self::Text(value) => Value::String(value),
-            Self::Number(value) => serde_json::Number::from_f64(value)
-                .map(Value::Number)
-                .unwrap_or(Value::Null),
+            Self::Number(value) => {
+                serde_json::Number::from_f64(value).map_or(Value::Null, Value::Number)
+            }
             Self::Bool(value) => Value::Bool(value),
             Self::EnumOption(gid) => Value::String(gid),
             Self::MultiEnum(gids) => Value::Array(gids.into_iter().map(Value::String).collect()),

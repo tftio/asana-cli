@@ -51,7 +51,7 @@ pub async fn get_task(
 ) -> Result<Task, ApiError> {
     let mut field_set: BTreeSet<String> = fields.into_iter().collect();
     for field in detail_defaults() {
-        field_set.insert(field.to_string());
+        field_set.insert((*field).to_string());
     }
 
     let mut query = Vec::new();
@@ -429,12 +429,14 @@ fn sort_tasks(tasks: &mut [Task], sort: TaskSort) {
         }),
         TaskSort::CreatedAt => tasks.sort_by(|a, b| a.created_at.cmp(&b.created_at)),
         TaskSort::ModifiedAt => tasks.sort_by(|a, b| a.modified_at.cmp(&b.modified_at)),
-        TaskSort::Assignee => tasks.sort_by(|a, b| assignee_label(a).cmp(&assignee_label(b))),
+        TaskSort::Assignee => tasks.sort_by_key(assignee_label),
     }
 }
 
 fn assignee_label(task: &Task) -> Option<String> {
-    task.assignee.as_ref().map(|assignee| assignee.label())
+    task.assignee
+        .as_ref()
+        .map(crate::models::user::UserReference::label)
 }
 
 #[derive(Debug, Deserialize)]

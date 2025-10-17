@@ -22,7 +22,7 @@ use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value, json};
 use std::{
-    collections::{HashMap, VecDeque},
+    collections::{HashSet, VecDeque},
     fmt::Write as FmtWrite,
     fs,
     io::{IsTerminal, stdout},
@@ -191,6 +191,17 @@ pub struct TaskCreateArgs {
 }
 
 /// Arguments for `task update`.
+///
+/// Contains multiple boolean fields (13 total) that map directly to CLI flags.
+/// Each flag represents a distinct user action:
+/// - 10 "clear" flags: `--clear-notes`, `--clear-assignee`, etc.
+/// - 2 state toggles: `--complete`, `--incomplete`
+/// - Other operation flags
+///
+/// This structure mirrors the CLI interface design where each boolean corresponds
+/// to an explicit flag users can provide. Alternative designs (e.g., enums) would
+/// break the existing CLI interface.
+#[allow(clippy::struct_excessive_bools)]
 #[derive(Args, Debug)]
 pub struct TaskUpdateArgs {
     /// Task identifier (gid).
@@ -695,18 +706,21 @@ pub fn handle_task_command(command: TaskCommand, config: &Config) -> Result<()> 
 }
 
 async fn list_tasks_command(client: &ApiClient, config: &Config, args: TaskListArgs) -> Result<()> {
-    let mut params = TaskListParams::default();
-    params.workspace = args
-        .workspace
-        .clone()
-        .or_else(|| config.default_workspace().map(|value| value.to_string()));
-    params.project = args.project.clone();
-    params.section = args.section.clone();
-    params.assignee = resolve_assignee(args.assignee.clone(), config, true);
-    params.completed = args.completed;
-    params.include_subtasks = args.include_subtasks;
-    params.limit = args.limit;
-    params.sort = parse_sort(args.sort.as_deref())?;
+    let mut params = TaskListParams {
+        workspace: args.workspace.clone().or_else(|| {
+            config
+                .default_workspace()
+                .map(std::string::ToString::to_string)
+        }),
+        project: args.project.clone(),
+        section: args.section.clone(),
+        assignee: resolve_assignee(args.assignee.clone(), config, true),
+        completed: args.completed,
+        include_subtasks: args.include_subtasks,
+        limit: args.limit,
+        sort: parse_sort(args.sort.as_deref())?,
+        ..Default::default()
+    };
 
     if let Some(due_before) = args.due_before.as_ref() {
         params.due_before = Some(parse_date_input(due_before)?);
@@ -763,20 +777,16 @@ async fn show_task_command(client: &ApiClient, config: &Config, args: TaskShowAr
     Ok(())
 }
 
-async fn create_task_command(
-    client: &ApiClient,
+fn prompt_create_task_interactive(
+    args: &mut TaskCreateArgs,
     config: &Config,
-    mut args: TaskCreateArgs,
-) -> Result<()> {
-    if args.interactive {
-        ensure_tty()?;
-    }
-
+) -> Result<(String, Option<String>)> {
     let mut name = args.name.clone().unwrap_or_default();
-    let mut workspace = args
-        .workspace
-        .clone()
-        .or_else(|| config.default_workspace().map(|value| value.to_string()));
+    let mut workspace = args.workspace.clone().or_else(|| {
+        config
+            .default_workspace()
+            .map(std::string::ToString::to_string)
+    });
 
     if args.interactive {
         if name.trim().is_empty() {
@@ -816,6 +826,20 @@ async fn create_task_command(
             }
         }
     }
+
+    Ok((name, workspace))
+}
+
+async fn create_task_command(
+    client: &ApiClient,
+    config: &Config,
+    mut args: TaskCreateArgs,
+) -> Result<()> {
+    if args.interactive {
+        ensure_tty()?;
+    }
+
+    let (name, workspace) = prompt_create_task_interactive(&mut args, config)?;
 
     let mut builder = TaskCreateBuilder::new(name);
     if let Some(notes) = args.notes {
@@ -864,7 +888,7 @@ async fn create_task_command(
 
     let request = builder
         .build()
-        .map_err(|err| map_validation_error(err, "create"))?;
+        .map_err(|err| map_validation_error(&err, "create"))?;
     let task = api::create_task(client, request).await?;
     let format = determine_output(args.output);
     let rendered = render_task_detail(&task, format, stdout().is_terminal())?;
@@ -953,7 +977,7 @@ async fn update_task_command(
 
     let request = builder
         .build()
-        .map_err(|err| map_validation_error(err, "update"))?;
+        .map_err(|err| map_validation_error(&err, "update"))?;
     let task = api::update_task(client, &args.task, request).await?;
     let format = determine_output(args.output);
     let rendered = render_task_detail(&task, format, stdout().is_terminal())?;
@@ -1007,9 +1031,8 @@ async fn create_batch_command(
                 if args.continue_on_error {
                     warn!(index, "failed to build create payload: {err:?}");
                     continue;
-                } else {
-                    return Err(err);
                 }
+                return Err(err);
             }
         };
 
@@ -1025,9 +1048,8 @@ async fn create_batch_command(
                 if args.continue_on_error {
                     warn!(index, "batch create failed: {err:?}");
                     continue;
-                } else {
-                    return Err(err);
                 }
+                return Err(err);
             }
         }
     }
@@ -1068,9 +1090,8 @@ async fn update_batch_command(
                 if args.continue_on_error {
                     warn!(index, "failed to build update payload: {err:?}");
                     continue;
-                } else {
-                    return Err(err);
                 }
+                return Err(err);
             }
         };
 
@@ -1086,9 +1107,8 @@ async fn update_batch_command(
                 if args.continue_on_error {
                     warn!(index, "batch update failed: {err:?}");
                     continue;
-                } else {
-                    return Err(err);
                 }
+                return Err(err);
             }
         }
     }
@@ -1126,7 +1146,7 @@ async fn complete_batch_command(
         let request = TaskUpdateBuilder::new()
             .completed(record.completed)
             .build()
-            .map_err(|err| map_validation_error(err, "complete task"))?;
+            .map_err(|err| map_validation_error(&err, "complete task"))?;
 
         match api::update_task(client, &record.task, request).await {
             Ok(task) => {
@@ -1140,9 +1160,8 @@ async fn complete_batch_command(
                 if args.continue_on_error {
                     warn!(index, "batch completion failed: {err:?}");
                     continue;
-                } else {
-                    return Err(err);
                 }
+                return Err(err);
             }
         }
     }
@@ -1177,17 +1196,20 @@ async fn search_task_command(
         return Ok(());
     }
 
-    let mut params = TaskListParams::default();
-    params.workspace = args
-        .workspace
-        .clone()
-        .or_else(|| config.default_workspace().map(|value| value.to_string()));
-    params.limit = Some(args.limit);
+    let params = TaskListParams {
+        workspace: args.workspace.clone().or_else(|| {
+            config
+                .default_workspace()
+                .map(std::string::ToString::to_string)
+        }),
+        limit: Some(args.limit),
+        ..Default::default()
+    };
 
     let mut tasks = api::list_tasks(client, params).await?;
-    let seen: HashMap<String, ()> = tasks.iter().map(|task| (task.gid.clone(), ())).collect();
+    let seen: HashSet<String> = tasks.iter().map(|task| task.gid.clone()).collect();
     for entry in &recent_entries {
-        if seen.contains_key(&entry.gid) {
+        if seen.contains(&entry.gid) {
             continue;
         }
         tasks.push(recent_entry_to_task(entry));
@@ -1473,7 +1495,7 @@ async fn subtasks_create_command(
 
     let request = builder
         .build()
-        .map_err(|err| map_validation_error(err, "create subtask"))?;
+        .map_err(|err| map_validation_error(&err, "create subtask"))?;
     let task = api::create_task(client, request).await?;
     let format = determine_output(args.output);
     let rendered = render_task_detail(&task, format, stdout().is_terminal())?;
@@ -1502,7 +1524,7 @@ async fn subtasks_convert_command(
 
     let request = builder
         .build()
-        .map_err(|err| map_validation_error(err, "convert subtask"))?;
+        .map_err(|err| map_validation_error(&err, "convert subtask"))?;
     let task = api::update_task(client, &args.task, request).await?;
     println!(
         "Task {} converted {}.",
@@ -1630,9 +1652,9 @@ fn parse_sort(value: Option<&str>) -> Result<Option<TaskSort>> {
     match value {
         None => Ok(None),
         Some("name") => Ok(Some(TaskSort::Name)),
-        Some("due") | Some("due_on") => Ok(Some(TaskSort::DueOn)),
-        Some("created") | Some("created_at") => Ok(Some(TaskSort::CreatedAt)),
-        Some("modified") | Some("modified_at") => Ok(Some(TaskSort::ModifiedAt)),
+        Some("due" | "due_on") => Ok(Some(TaskSort::DueOn)),
+        Some("created" | "created_at") => Ok(Some(TaskSort::CreatedAt)),
+        Some("modified" | "modified_at") => Ok(Some(TaskSort::ModifiedAt)),
         Some("assignee") => Ok(Some(TaskSort::Assignee)),
         Some(other) => Err(anyhow!(
             "unsupported sort value '{other}'; expected name, due_on, created_at, modified_at, or assignee"
@@ -1696,7 +1718,7 @@ fn parse_datetime_input(value: &str) -> Result<String> {
     Ok(parsed.to_rfc3339())
 }
 
-fn map_validation_error(err: TaskValidationError, context: &str) -> anyhow::Error {
+fn map_validation_error(err: &TaskValidationError, context: &str) -> anyhow::Error {
     match err {
         TaskValidationError::MissingName => anyhow!("task name is required to {context}"),
         TaskValidationError::MissingScope => {
@@ -1715,7 +1737,7 @@ fn resolve_assignee(input: Option<String>, config: &Config, fallback_me: bool) -
             } else if trimmed.eq_ignore_ascii_case("me") {
                 config
                     .default_assignee()
-                    .map(|s| s.to_string())
+                    .map(std::string::ToString::to_string)
                     .or(Some("me".to_string()))
             } else {
                 Some(trimmed.to_string())
@@ -1723,7 +1745,7 @@ fn resolve_assignee(input: Option<String>, config: &Config, fallback_me: bool) -
         }
         None => config
             .default_assignee()
-            .map(|s| s.to_string())
+            .map(std::string::ToString::to_string)
             .or_else(|| {
                 if fallback_me {
                     Some("me".to_string())
@@ -1826,7 +1848,7 @@ fn detect_batch_format(path: &Path) -> Result<BatchFormat> {
     let ext = path
         .extension()
         .and_then(|value| value.to_str())
-        .map(|value| value.to_ascii_lowercase());
+        .map(str::to_ascii_lowercase);
     match ext.as_deref() {
         Some("json") => Ok(BatchFormat::Json),
         Some("csv") => Ok(BatchFormat::Csv),
@@ -1906,10 +1928,10 @@ where
 
 fn split_list_string(value: &str) -> Vec<String> {
     value
-        .split(|c| c == ',' || c == ';')
-        .map(|part| part.trim())
+        .split([',', ';'])
+        .map(str::trim)
         .filter(|part| !part.is_empty())
-        .map(|part| part.to_string())
+        .map(std::string::ToString::to_string)
         .collect()
 }
 
@@ -1970,7 +1992,7 @@ fn to_custom_field_value(value: Value) -> CustomFieldValue {
         }
         Value::Bool(flag) => CustomFieldValue::Bool(flag),
         Value::Array(values) => {
-            if values.iter().all(|item| item.is_string()) {
+            if values.iter().all(Value::is_string) {
                 let items = values
                     .into_iter()
                     .filter_map(|item| item.as_str().map(str::to_string))
@@ -1995,11 +2017,11 @@ fn build_create_request(record: &BatchCreateRecord, config: &Config) -> Result<T
         builder = builder.html_notes(html_notes.clone());
     }
 
-    if let Some(workspace) = record
-        .workspace
-        .clone()
-        .or_else(|| config.default_workspace().map(|value| value.to_string()))
-    {
+    if let Some(workspace) = record.workspace.clone().or_else(|| {
+        config
+            .default_workspace()
+            .map(std::string::ToString::to_string)
+    }) {
         builder = builder.workspace(workspace);
     }
     let resolved_assignee = resolve_assignee(record.assignee.clone(), config, false);
@@ -2039,7 +2061,7 @@ fn build_create_request(record: &BatchCreateRecord, config: &Config) -> Result<T
 
     builder
         .build()
-        .map_err(|err| map_validation_error(err, "create batch"))
+        .map_err(|err| map_validation_error(&err, "create batch"))
 }
 
 fn build_update_request(record: &BatchUpdateRecord, config: &Config) -> Result<TaskUpdateRequest> {
@@ -2114,11 +2136,11 @@ fn build_update_request(record: &BatchUpdateRecord, config: &Config) -> Result<T
 
     builder
         .build()
-        .map_err(|err| map_validation_error(err, "update batch"))
+        .map_err(|err| map_validation_error(&err, "update batch"))
 }
 
 fn filter_by_fuzzy(tasks: Vec<Task>, query: &str) -> Vec<Task> {
-    let mut scored: Vec<(i32, Task)> = tasks
+    let mut scored: Vec<(i64, Task)> = tasks
         .into_iter()
         .filter_map(|task| fuzzy_score(&task.name, query).map(|score| (score, task)))
         .collect();
@@ -2126,20 +2148,28 @@ fn filter_by_fuzzy(tasks: Vec<Task>, query: &str) -> Vec<Task> {
     scored.into_iter().map(|(_, task)| task).collect()
 }
 
-fn fuzzy_score(text: &str, query: &str) -> Option<i32> {
+/// Compute fuzzy match score for search queries.
+///
+/// Returns higher scores for better matches. Uses substring matching with position
+/// scoring, falling back to Levenshtein distance for non-matches.
+///
+/// Casts `usize` to `i64` for score calculations. This is safe because task names
+/// are bounded by API limits (~1MB max) and cannot approach `i64::MAX` in practice.
+#[allow(clippy::cast_possible_wrap)]
+fn fuzzy_score(text: &str, query: &str) -> Option<i64> {
     if query.trim().is_empty() {
         return Some(0);
     }
     let haystack = text.to_ascii_lowercase();
     let needle = query.to_ascii_lowercase();
     if haystack.contains(&needle) {
-        let position = haystack.find(&needle).unwrap_or(0) as i32;
+        let position = haystack.find(&needle).unwrap_or(0) as i64;
         let score = 500 - position;
         return Some(score);
     }
 
-    let distance = levenshtein(&haystack, &needle) as i32;
-    let max_len = haystack.len().max(needle.len()) as i32;
+    let distance = levenshtein(&haystack, &needle) as i64;
+    let max_len = haystack.len().max(needle.len()) as i64;
     let score = max_len - distance;
     if score <= 0 { None } else { Some(score) }
 }
