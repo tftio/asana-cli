@@ -1,5 +1,8 @@
-# Asana Cli - Development Workflow
+# asana-cli - Development Workflow
 # Requires: just, peter-hook, versioneer
+#
+
+export TOOL_NAME := "asana-cli"
 
 # Default recipe to display available commands
 default:
@@ -7,7 +10,6 @@ default:
 
 # Setup development environment
 setup:
-    @echo "Setting up Asana Cli development environment..."
     @just install-hooks
     @echo "✅ Setup complete!"
 
@@ -43,7 +45,7 @@ release:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    PROJECT_NAME="Asana Cli"
+    PROJECT_NAME="$TOOL_NAME"
 
     echo "🚀 Starting release workflow for $PROJECT_NAME..."
     echo ""
@@ -168,13 +170,13 @@ clean:
 
 # Build in debug mode
 build:
-    @echo "Building asana-cli..."
+    @echo "Building {{TOOL_NAME}}"
     cargo build
     @echo "✅ Build complete!"
 
 # Build in release mode
 build-release:
-    @echo "Building asana-cli in release mode..."
+    @echo "Building {{TOOL_NAME}} in release mode..."
     cargo build --release
     @echo "✅ Release build complete!"
 
