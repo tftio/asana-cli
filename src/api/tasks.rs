@@ -7,6 +7,7 @@ use crate::{
 use futures_util::{StreamExt, pin_mut};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
+use tracing::debug;
 
 /// Retrieve tasks according to the supplied parameters.
 ///
@@ -28,6 +29,32 @@ pub async fn list_tasks(
     while let Some(page) = stream.next().await {
         let mut page = page?;
         tasks.append(&mut page);
+    }
+
+    // Fetch subtasks if requested. This makes separate API calls for each task
+    // to get subtasks with complete field data. The deprecated opt_expand=subtasks
+    // no longer returns full field information, and num_subtasks is not reliably
+    // populated by the API, so we attempt to fetch subtasks for all tasks.
+    if params.include_subtasks {
+        debug!("Fetching subtasks for {} parent tasks", tasks.len());
+        let mut all_subtasks = Vec::new();
+        for task in &tasks {
+            // Continue on error - tasks without subtasks may return empty results or errors
+            match list_subtasks(client, &task.gid, params.fields.iter().cloned().collect()).await {
+                Ok(subtasks) => {
+                    if !subtasks.is_empty() {
+                        debug!("Found {} subtasks for task {}", subtasks.len(), task.gid);
+                    }
+                    all_subtasks.extend(subtasks);
+                }
+                Err(e) => {
+                    debug!("Failed to fetch subtasks for task {}: {}", task.gid, e);
+                    continue; // Task has no subtasks or fetch failed, skip it
+                }
+            }
+        }
+        debug!("Total subtasks fetched: {}", all_subtasks.len());
+        tasks.extend(all_subtasks);
     }
 
     params.apply_post_filters(&mut tasks);
@@ -360,6 +387,7 @@ fn ensure_default_fields(params: &mut TaskListParams) {
         "memberships.section.name",
         "memberships.section.gid",
         "permalink_url",
+        "num_subtasks",
     ];
     for field in defaults {
         params.fields.insert(field.to_string());
@@ -403,11 +431,18 @@ fn detail_defaults() -> &'static [&'static str] {
         "attachments",
         "permalink_url",
         "resource_subtype",
+        "num_subtasks",
     ]
 }
 
 fn ensure_subtask_fields(fields: &mut BTreeSet<String>) {
-    if fields.is_empty() {
+    // Always ensure parent field is included so we can identify subtasks
+    fields.insert("parent".to_string());
+    fields.insert("parent.gid".to_string());
+    fields.insert("parent.name".to_string());
+
+    if fields.len() == 3 {
+        // Only parent fields were added, add minimal defaults
         let defaults = ["gid", "name", "completed", "assignee.name"];
         for field in defaults {
             fields.insert(field.to_string());

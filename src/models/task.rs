@@ -222,6 +222,9 @@ pub struct Task {
     /// Public permalink.
     #[serde(default)]
     pub permalink_url: Option<String>,
+    /// Number of subtasks this task contains.
+    #[serde(default)]
+    pub num_subtasks: Option<i64>,
 }
 
 impl Task {
@@ -291,9 +294,9 @@ impl TaskListParams {
         if let Some(due_on) = &self.due_on {
             pairs.push(("due_on".into(), due_on.clone()));
         }
-        if self.include_subtasks {
-            pairs.push(("opt_expand".into(), "subtasks".into()));
-        }
+        // Note: include_subtasks flag is used to control separate subtask fetching
+        // after the main API call. The deprecated opt_expand=subtasks parameter
+        // no longer returns complete field data and has been removed.
         if !self.fields.is_empty() {
             let field_list = self.fields.iter().cloned().collect::<Vec<_>>().join(",");
             pairs.push(("opt_fields".into(), field_list));

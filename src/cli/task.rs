@@ -1841,6 +1841,7 @@ fn blank_task(gid: String, name: String) -> Task {
         custom_fields: Vec::new(),
         attachments: Vec::new(),
         permalink_url: None,
+        num_subtasks: None,
     }
 }
 
