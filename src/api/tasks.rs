@@ -394,7 +394,7 @@ fn ensure_default_fields(params: &mut TaskListParams) {
     }
 }
 
-fn detail_defaults() -> &'static [&'static str] {
+const fn detail_defaults() -> &'static [&'static str] {
     &[
         "gid",
         "name",

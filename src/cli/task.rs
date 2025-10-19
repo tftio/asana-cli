@@ -77,6 +77,8 @@ pub enum TaskCommand {
         #[command(subcommand)]
         command: TaskFollowerCommand,
     },
+    /// Move a task to a section within a project.
+    MoveToSection(TaskMoveToSectionArgs),
 }
 
 /// Arguments for `task list`.
@@ -669,6 +671,23 @@ pub struct TaskFollowerModifyArgs {
     pub followers: Vec<String>,
 }
 
+/// Arguments for moving a task to a section.
+#[derive(Args, Debug)]
+pub struct TaskMoveToSectionArgs {
+    /// Task identifier.
+    #[arg(value_name = "TASK")]
+    pub task: String,
+    /// Section identifier to move the task to.
+    #[arg(long)]
+    pub section: String,
+    /// Optional: insert task before this task gid.
+    #[arg(long = "insert-before")]
+    pub insert_before: Option<String>,
+    /// Optional: insert task after this task gid.
+    #[arg(long = "insert-after")]
+    pub insert_after: Option<String>,
+}
+
 /// Parse and execute task commands.
 ///
 /// # Errors
@@ -701,6 +720,7 @@ pub fn handle_task_command(command: TaskCommand, config: &Config) -> Result<()> 
             TaskCommand::Blocks { command } => handle_dependents_command(&client, command).await,
             TaskCommand::Projects { command } => handle_projects_command(&client, command).await,
             TaskCommand::Followers { command } => handle_followers_command(&client, command).await,
+            TaskCommand::MoveToSection(args) => move_to_section_command(&client, args).await,
         }
     })
 }
@@ -1402,6 +1422,19 @@ async fn handle_followers_command(client: &ApiClient, command: TaskFollowerComma
     }
 }
 
+async fn move_to_section_command(client: &ApiClient, args: TaskMoveToSectionArgs) -> Result<()> {
+    api::add_task_to_section(
+        client,
+        &args.section,
+        args.task.clone(),
+        args.insert_before,
+        args.insert_after,
+    )
+    .await?;
+    println!("Moved task {} to section {}.", args.task, args.section);
+    Ok(())
+}
+
 async fn subtasks_list_command(client: &ApiClient, args: TaskSubtasksListArgs) -> Result<()> {
     let fields = args.fields.clone();
     let entries = collect_subtasks(client, &args.task, args.recursive, 0, &fields).await?;
@@ -1729,8 +1762,20 @@ fn map_validation_error(err: &TaskValidationError, context: &str) -> anyhow::Err
 }
 
 fn resolve_assignee(input: Option<String>, config: &Config, fallback_me: bool) -> Option<String> {
-    match input {
-        Some(value) => {
+    input.map_or_else(
+        || {
+            config
+                .default_assignee()
+                .map(std::string::ToString::to_string)
+                .or_else(|| {
+                    if fallback_me {
+                        Some("me".to_string())
+                    } else {
+                        None
+                    }
+                })
+        },
+        |value| {
             let trimmed = value.trim();
             if trimmed.is_empty() {
                 None
@@ -1738,22 +1783,12 @@ fn resolve_assignee(input: Option<String>, config: &Config, fallback_me: bool) -
                 config
                     .default_assignee()
                     .map(std::string::ToString::to_string)
-                    .or(Some("me".to_string()))
+                    .or_else(|| Some("me".to_string()))
             } else {
                 Some(trimmed.to_string())
             }
-        }
-        None => config
-            .default_assignee()
-            .map(std::string::ToString::to_string)
-            .or_else(|| {
-                if fallback_me {
-                    Some("me".to_string())
-                } else {
-                    None
-                }
-            }),
-    }
+        },
+    )
 }
 
 fn record_recent_task(config: &Config, task: &Task) -> Result<()> {
@@ -1811,6 +1846,7 @@ fn recent_entry_to_task(entry: &RecentTaskEntry) -> Task {
     blank_task(entry.gid.clone(), entry.name.clone())
 }
 
+#[allow(clippy::missing_const_for_fn)]
 fn blank_task(gid: String, name: String) -> Task {
     Task {
         gid,
@@ -1984,13 +2020,9 @@ fn parse_map_string(input: &str) -> Result<Map<String, Value>> {
 fn to_custom_field_value(value: Value) -> CustomFieldValue {
     match value {
         Value::String(text) => CustomFieldValue::Text(text),
-        Value::Number(number) => {
-            if let Some(v) = number.as_f64() {
-                CustomFieldValue::Number(v)
-            } else {
-                CustomFieldValue::Json(Value::Number(number))
-            }
-        }
+        Value::Number(number) => number
+            .as_f64()
+            .map_or_else(|| CustomFieldValue::Json(Value::Number(number)), CustomFieldValue::Number),
         Value::Bool(flag) => CustomFieldValue::Bool(flag),
         Value::Array(values) => {
             if values.iter().all(Value::is_string) {

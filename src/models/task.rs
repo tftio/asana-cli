@@ -334,7 +334,7 @@ pub enum TaskSort {
 }
 
 /// Payload for creating tasks.
-#[derive(Debug, Clone, Serialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct TaskCreateData {
     /// Task name (required).
@@ -568,7 +568,7 @@ impl TaskCreateBuilder {
 /// explicit `null` values. Omitting a field preserves its current value, while
 /// sending `null` clears it.
 #[allow(clippy::option_option)]
-#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct TaskUpdateData {
     /// Task name update.
@@ -618,7 +618,7 @@ pub struct TaskUpdateData {
 impl TaskUpdateData {
     /// Determine whether any fields have been set.
     #[must_use]
-    pub fn is_empty(&self) -> bool {
+    pub const fn is_empty(&self) -> bool {
         self.name.is_none()
             && self.notes.is_none()
             && self.html_notes.is_none()
@@ -693,6 +693,7 @@ impl TaskUpdateBuilder {
 
     /// Mark the task completed/incomplete.
     #[must_use]
+    #[allow(clippy::missing_const_for_fn)]
     pub fn completed(mut self, completed: bool) -> Self {
         self.data.completed = Some(completed);
         self

@@ -47,8 +47,10 @@ async fn paginate_workspaces_streams_all_pages() {
 
         let cache = TempDir::new().expect("temporary cache dir");
         let token = AuthToken::new(SecretString::new("workspace-token".into()));
+        let base_url = server.url();
+        drop(server);
         let client = ApiClient::builder(token)
-            .base_url(server.url())
+            .base_url(base_url)
             .cache_dir(cache.path().join("cache"))
             .build()
             .expect("client initialises");
@@ -96,8 +98,10 @@ async fn rate_limit_recovers_after_retry() {
 
         let cache = TempDir::new().expect("temporary cache dir");
         let token = AuthToken::new(SecretString::new("rate-limit-token".into()));
+        let base_url = server.url();
+        drop(server);
         let client = ApiClient::builder(token)
-            .base_url(server.url())
+            .base_url(base_url)
             .cache_dir(cache.path().join("cache"))
             .retry_base_delay(Duration::from_millis(10))
             .max_retries(3)
@@ -139,8 +143,10 @@ async fn rate_limit_failure_surfaces_retry_after() {
 
         let cache = TempDir::new().expect("temporary cache dir");
         let token = AuthToken::new(SecretString::new("rate-limit-failure".into()));
+        let base_url = server.url();
+        drop(server);
         let client = ApiClient::builder(token)
-            .base_url(server.url())
+            .base_url(base_url)
             .cache_dir(cache.path().join("cache"))
             .retry_base_delay(Duration::from_millis(10))
             .max_retries(1)

@@ -1,6 +1,7 @@
 //! Command-line interface entry points for the Asana CLI.
 
 mod project;
+mod section;
 mod task;
 
 use crate::api::{ApiClient, ApiError, AuthToken};
@@ -12,6 +13,7 @@ use clap_complete::Shell;
 use colored::Colorize;
 use project::ProjectCommand;
 use secrecy::SecretString;
+use section::SectionCommand;
 use serde_json::Value;
 use std::fs::{self, File};
 use std::io::{self, Write};
@@ -58,6 +60,11 @@ enum Commands {
     Project {
         #[command(subcommand)]
         command: Box<ProjectCommand>,
+    },
+    /// Section operations.
+    Section {
+        #[command(subcommand)]
+        command: Box<SectionCommand>,
     },
     /// Generate shell completion scripts.
     Completions {
@@ -169,6 +176,10 @@ pub fn run() -> Result<i32> {
         }
         Commands::Project { command } => {
             handle_project_command(*command, &config)?;
+            0
+        }
+        Commands::Section { command } => {
+            handle_section_command(*command, &config)?;
             0
         }
         Commands::Completions { shell } => {
@@ -441,4 +452,8 @@ pub(super) fn build_api_client(config: &Config) -> Result<ApiClient> {
 
 fn handle_project_command(command: ProjectCommand, config: &Config) -> Result<()> {
     project::handle_project_command(command, config)
+}
+
+fn handle_section_command(command: SectionCommand, config: &Config) -> Result<()> {
+    section::execute_section_command(command, config)
 }

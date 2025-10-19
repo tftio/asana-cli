@@ -922,6 +922,7 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let token = AuthToken::new(SecretString::new("test-token".into()));
         let base_url = server.url();
+        drop(server);
         let client = ApiClient::builder(token)
             .base_url(base_url)
             .cache_dir(tmp.path().join("cache"))
@@ -951,6 +952,7 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let token = AuthToken::new(SecretString::new("retry-token".into()));
         let base_url = server.url();
+        drop(server);
         let client = ApiClient::builder(token)
             .base_url(base_url)
             .cache_dir(tmp.path().join("cache"))
@@ -1012,6 +1014,7 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let token = AuthToken::new(SecretString::new("metrics-token".into()));
         let base_url = server.url();
+        drop(server);
         let client = ApiClient::builder(token)
             .base_url(base_url)
             .cache_dir(tmp.path().join("cache"))
@@ -1048,6 +1051,7 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let token = AuthToken::new(SecretString::new("metrics-rate-limit".into()));
         let base_url = server.url();
+        drop(server);
         let client = ApiClient::builder(token)
             .base_url(base_url)
             .cache_dir(tmp.path().join("cache"))
@@ -1089,6 +1093,7 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let token = AuthToken::new(SecretString::new("paginate-limit".into()));
         let base_url = server.url();
+        drop(server);
         let client = ApiClient::builder(token)
             .base_url(base_url)
             .cache_dir(tmp.path().join("cache"))
@@ -1139,6 +1144,7 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let token = AuthToken::new(SecretString::new("paginate-offset".into()));
         let base_url = server.url();
+        drop(server);
         let client = ApiClient::builder(token)
             .base_url(base_url)
             .cache_dir(tmp.path().join("cache"))
@@ -1173,6 +1179,7 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let token = AuthToken::new(SecretString::new("empty-response".into()));
         let url = server.url();
+        drop(server);
         let client = ApiClient::builder(token)
             .base_url(url)
             .cache_dir(tmp.path().join("cache"))
@@ -1196,6 +1203,7 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let token = AuthToken::new(SecretString::new("missing-data".into()));
         let url = server.url();
+        drop(server);
         let client = ApiClient::builder(token)
             .base_url(url)
             .cache_dir(tmp.path().join("cache"))

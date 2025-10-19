@@ -6,6 +6,7 @@ pub mod client;
 pub mod error;
 pub mod pagination;
 pub mod projects;
+pub mod sections;
 pub mod tasks;
 
 pub use auth::{AuthToken, StaticTokenProvider, TokenProvider};
@@ -15,6 +16,9 @@ pub use pagination::{ListResponse, PaginationInfo};
 pub use projects::{
     add_members, create_project, delete_project, get_project, list_members, list_projects,
     list_statuses, remove_members, update_member, update_project,
+};
+pub use sections::{
+    add_task_to_section, create_section, get_section, get_section_tasks, list_sections,
 };
 pub use tasks::{
     add_dependencies, add_dependents, add_followers, add_project, create_task, delete_task,
