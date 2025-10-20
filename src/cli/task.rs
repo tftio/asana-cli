@@ -2020,9 +2020,10 @@ fn parse_map_string(input: &str) -> Result<Map<String, Value>> {
 fn to_custom_field_value(value: Value) -> CustomFieldValue {
     match value {
         Value::String(text) => CustomFieldValue::Text(text),
-        Value::Number(number) => number
-            .as_f64()
-            .map_or_else(|| CustomFieldValue::Json(Value::Number(number)), CustomFieldValue::Number),
+        Value::Number(number) => number.as_f64().map_or_else(
+            || CustomFieldValue::Json(Value::Number(number)),
+            CustomFieldValue::Number,
+        ),
         Value::Bool(flag) => CustomFieldValue::Bool(flag),
         Value::Array(values) => {
             if values.iter().all(Value::is_string) {

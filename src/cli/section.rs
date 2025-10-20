@@ -115,10 +115,7 @@ async fn list_sections(args: SectionListArgs, config: &Config) -> Result<()> {
         "csv" => {
             println!("gid,name,project_gid,project_name");
             for section in sections {
-                let project_gid = section
-                    .project
-                    .as_ref()
-                    .map_or("", |p| p.gid.as_str());
+                let project_gid = section.project.as_ref().map_or("", |p| p.gid.as_str());
                 let project_name = section
                     .project
                     .as_ref()
@@ -137,10 +134,10 @@ async fn list_sections(args: SectionListArgs, config: &Config) -> Result<()> {
                 println!("{:<20} {:<30} {:<20}", "GID", "NAME", "PROJECT");
                 println!("{}", "-".repeat(72));
                 for section in sections {
-                    let project_label = section
-                        .project
-                        .as_ref()
-                        .map_or_else(|| "N/A".to_string(), super::super::models::section::SectionProjectReference::label);
+                    let project_label = section.project.as_ref().map_or_else(
+                        || "N/A".to_string(),
+                        super::super::models::section::SectionProjectReference::label,
+                    );
                     println!(
                         "{:<20} {:<30} {:<20}",
                         section.gid, section.name, project_label
@@ -239,10 +236,10 @@ async fn list_section_tasks(args: SectionTasksArgs, config: &Config) -> Result<(
         "csv" => {
             println!("gid,name,completed,assignee");
             for task in tasks {
-                let assignee = task
-                    .assignee
-                    .as_ref()
-                    .map_or_else(|| "Unassigned".to_string(), super::super::models::user::UserReference::label);
+                let assignee = task.assignee.as_ref().map_or_else(
+                    || "Unassigned".to_string(),
+                    super::super::models::user::UserReference::label,
+                );
                 println!("{},{},{},{}", task.gid, task.name, task.completed, assignee);
             }
         }
@@ -257,10 +254,10 @@ async fn list_section_tasks(args: SectionTasksArgs, config: &Config) -> Result<(
                 println!("{}", "-".repeat(92));
                 for task in tasks {
                     let status = if task.completed { "Done" } else { "Open" };
-                    let assignee = task
-                        .assignee
-                        .as_ref()
-                        .map_or_else(|| "Unassigned".to_string(), super::super::models::user::UserReference::label);
+                    let assignee = task.assignee.as_ref().map_or_else(
+                        || "Unassigned".to_string(),
+                        super::super::models::user::UserReference::label,
+                    );
                     println!(
                         "{:<20} {:<40} {:<10} {:<20}",
                         task.gid, task.name, status, assignee
