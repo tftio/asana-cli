@@ -244,7 +244,7 @@ impl Config {
             if value.trim().is_empty() {
                 None
             } else {
-                Some(SecretString::new(value.clone()))
+                Some(SecretString::new(value.clone().into()))
             }
         })
     }
@@ -366,7 +366,9 @@ impl Overrides {
             default_workspace: env::var(ENV_WORKSPACE).ok(),
             default_assignee: env::var(ENV_ASSIGNEE).ok(),
             default_project: env::var(ENV_PROJECT).ok(),
-            personal_access_token: env::var(ENV_TOKEN).ok().map(SecretString::new),
+            personal_access_token: env::var(ENV_TOKEN)
+                .ok()
+                .map(|s| SecretString::new(s.into())),
         }
     }
 }

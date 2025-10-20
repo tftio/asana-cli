@@ -1,8 +1,8 @@
 [package]
 name = "asana-cli"
-version = "0.6.4"
+version = "0.6.5"
 edition = "2024"
-rust-version = "1.85.0"
+rust-version = "1.86.0"
 authors = ["James Felix Black <jfb@workhelix.com>"]
 description = "An interface to the Asana API"
 license = "MIT"
@@ -21,6 +21,12 @@ wildcard_imports = "deny"
 
 # Allow only unavoidable Windows ecosystem duplicates
 multiple_crate_versions = "allow"
+
+# Allow for functions that could be const but aren't due to deref coercion limitations
+missing_const_for_fn = "allow"
+
+# Allow significant drop tightening - new in 1.86, can be overly aggressive in tests
+significant_drop_tightening = "allow"
 
 # Quality checks - maximum aggression
 all = { level = "deny", priority = -1 }

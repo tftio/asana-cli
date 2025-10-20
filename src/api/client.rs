@@ -922,7 +922,6 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let token = AuthToken::new(SecretString::new("test-token".into()));
         let base_url = server.url();
-        drop(server);
         let client = ApiClient::builder(token)
             .base_url(base_url)
             .cache_dir(tmp.path().join("cache"))
@@ -931,6 +930,7 @@ mod tests {
 
         let user: Value = client.get_current_user().await.unwrap();
         assert_eq!(user["data"]["name"], "Test User");
+        drop(server);
     }
 
     #[tokio::test]
@@ -952,7 +952,6 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let token = AuthToken::new(SecretString::new("retry-token".into()));
         let base_url = server.url();
-        drop(server);
         let client = ApiClient::builder(token)
             .base_url(base_url)
             .cache_dir(tmp.path().join("cache"))
@@ -963,6 +962,7 @@ mod tests {
 
         let user: Value = client.get_current_user().await.unwrap();
         assert_eq!(user["data"]["name"], "Retry User");
+        drop(server);
     }
 
     #[tokio::test]
@@ -1014,7 +1014,6 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let token = AuthToken::new(SecretString::new("metrics-token".into()));
         let base_url = server.url();
-        drop(server);
         let client = ApiClient::builder(token)
             .base_url(base_url)
             .cache_dir(tmp.path().join("cache"))
@@ -1027,6 +1026,7 @@ mod tests {
         assert_eq!(info.remaining, Some(149));
         assert_eq!(info.reset, Some(1_234_567_890));
         assert!(info.retry_after.is_none());
+        drop(server);
     }
 
     #[tokio::test]
@@ -1051,7 +1051,6 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let token = AuthToken::new(SecretString::new("metrics-rate-limit".into()));
         let base_url = server.url();
-        drop(server);
         let client = ApiClient::builder(token)
             .base_url(base_url)
             .cache_dir(tmp.path().join("cache"))
@@ -1065,6 +1064,7 @@ mod tests {
         assert_eq!(info.limit, Some(150));
         assert_eq!(info.remaining, Some(0));
         assert!(info.retry_after.is_some());
+        drop(server);
     }
 
     #[tokio::test]
@@ -1093,7 +1093,6 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let token = AuthToken::new(SecretString::new("paginate-limit".into()));
         let base_url = server.url();
-        drop(server);
         let client = ApiClient::builder(token)
             .base_url(base_url)
             .cache_dir(tmp.path().join("cache"))
@@ -1113,6 +1112,7 @@ mod tests {
             );
         }
         assert_eq!(ids, vec!["1".to_string()]);
+        drop(server);
     }
 
     #[tokio::test]
@@ -1144,7 +1144,6 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let token = AuthToken::new(SecretString::new("paginate-offset".into()));
         let base_url = server.url();
-        drop(server);
         let client = ApiClient::builder(token)
             .base_url(base_url)
             .cache_dir(tmp.path().join("cache"))
@@ -1164,6 +1163,7 @@ mod tests {
             );
         }
         assert_eq!(ids, vec!["1".to_string()]);
+        drop(server);
     }
 
     #[tokio::test]
@@ -1179,7 +1179,6 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let token = AuthToken::new(SecretString::new("empty-response".into()));
         let url = server.url();
-        drop(server);
         let client = ApiClient::builder(token)
             .base_url(url)
             .cache_dir(tmp.path().join("cache"))
@@ -1188,6 +1187,7 @@ mod tests {
 
         let err = client.get_current_user().await.expect_err("should error");
         assert!(matches!(err, ApiError::Other(message) if message.contains("empty response")));
+        drop(server);
     }
 
     #[tokio::test]
@@ -1203,7 +1203,6 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let token = AuthToken::new(SecretString::new("missing-data".into()));
         let url = server.url();
-        drop(server);
         let client = ApiClient::builder(token)
             .base_url(url)
             .cache_dir(tmp.path().join("cache"))
@@ -1212,5 +1211,6 @@ mod tests {
 
         let err = client.get_current_user().await.expect_err("should error");
         assert!(matches!(err, ApiError::Other(message) if message.contains("data")));
+        drop(server);
     }
 }

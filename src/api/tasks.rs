@@ -49,7 +49,7 @@ pub async fn list_tasks(
                 }
                 Err(e) => {
                     debug!("Failed to fetch subtasks for task {}: {}", task.gid, e);
-                    continue; // Task has no subtasks or fetch failed, skip it
+                    // Task has no subtasks or fetch failed, skip it
                 }
             }
         }

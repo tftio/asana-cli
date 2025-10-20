@@ -3,6 +3,6 @@
 # This ensures clippy lints and other tooling behavior are identical everywhere
 
 [toolchain]
-channel = "1.85.0"
+channel = "1.86.0"
 components = ["rustfmt", "clippy"]
 profile = "minimal"

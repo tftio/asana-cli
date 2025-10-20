@@ -288,7 +288,7 @@ fn handle_config_set(command: ConfigSetCommand, config: &mut Config) -> Result<(
                 return Err(anyhow!("token value cannot be empty"));
             }
 
-            let secret = SecretString::new(value);
+            let secret = SecretString::new(value.into());
             config
                 .store_personal_access_token(&secret)
                 .context("failed to store Personal Access Token")?;

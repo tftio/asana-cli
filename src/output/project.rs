@@ -263,7 +263,8 @@ fn format_status(status: &crate::models::ProjectStatus) -> String {
     };
 
     if let Some(author) = status.created_by.as_ref() {
-        descriptor.push_str(&format!(" [{}]", author.label()));
+        use std::fmt::Write;
+        write!(descriptor, " [{}]", author.label()).unwrap();
     }
 
     if let Some(text) = status.text.as_ref() {

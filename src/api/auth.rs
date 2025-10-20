@@ -56,7 +56,7 @@ impl StaticTokenProvider {
 
 impl TokenProvider for StaticTokenProvider {
     fn personal_access_token(&self) -> SecretString {
-        SecretString::new(self.token.expose().to_owned())
+        SecretString::new(self.token.expose().to_owned().into())
     }
 }
 

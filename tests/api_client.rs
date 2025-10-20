@@ -48,7 +48,6 @@ async fn paginate_workspaces_streams_all_pages() {
         let cache = TempDir::new().expect("temporary cache dir");
         let token = AuthToken::new(SecretString::new("workspace-token".into()));
         let base_url = server.url();
-        drop(server);
         let client = ApiClient::builder(token)
             .base_url(base_url)
             .cache_dir(cache.path().join("cache"))
@@ -75,6 +74,7 @@ async fn paginate_workspaces_streams_all_pages() {
                 ("789".to_string(), "Operations".to_string()),
             ]
         );
+        drop(server);
     }
 }
 
@@ -99,7 +99,6 @@ async fn rate_limit_recovers_after_retry() {
         let cache = TempDir::new().expect("temporary cache dir");
         let token = AuthToken::new(SecretString::new("rate-limit-token".into()));
         let base_url = server.url();
-        drop(server);
         let client = ApiClient::builder(token)
             .base_url(base_url)
             .cache_dir(cache.path().join("cache"))
@@ -121,6 +120,7 @@ async fn rate_limit_recovers_after_retry() {
         assert_eq!(info.limit, Some(150));
         assert_eq!(info.remaining, Some(149));
         assert!(info.retry_after.is_none());
+        drop(server);
     }
 }
 
@@ -144,7 +144,6 @@ async fn rate_limit_failure_surfaces_retry_after() {
         let cache = TempDir::new().expect("temporary cache dir");
         let token = AuthToken::new(SecretString::new("rate-limit-failure".into()));
         let base_url = server.url();
-        drop(server);
         let client = ApiClient::builder(token)
             .base_url(base_url)
             .cache_dir(cache.path().join("cache"))
@@ -164,13 +163,14 @@ async fn rate_limit_failure_surfaces_retry_after() {
             }
             other => panic!("expected rate limited error, got {other:?}"),
         }
+        drop(server);
     }
 }
 
 #[tokio::test]
 async fn optional_live_smoke_test() {
     let token = match std::env::var("ASANA_CLI_TEST_TOKEN") {
-        Ok(value) if !value.is_empty() => SecretString::new(value),
+        Ok(value) if !value.is_empty() => SecretString::new(value.into()),
         _ => return,
     };
 
