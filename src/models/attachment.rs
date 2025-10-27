@@ -1,6 +1,7 @@
 //! Attachment metadata returned alongside tasks.
 
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 
 /// File attachment associated with a task or comment.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -31,4 +32,24 @@ pub struct Attachment {
     /// Permanent permalink URL.
     #[serde(default)]
     pub permanent_url: Option<String>,
+}
+
+/// Parameters for listing attachments.
+#[derive(Debug, Clone)]
+pub struct AttachmentListParams {
+    /// Task identifier.
+    pub task_gid: String,
+    /// Maximum number to fetch.
+    pub limit: Option<usize>,
+}
+
+/// Parameters for uploading attachments.
+#[derive(Debug, Clone)]
+pub struct AttachmentUploadParams {
+    /// Task identifier.
+    pub task_gid: String,
+    /// Local file path.
+    pub file_path: PathBuf,
+    /// Optional filename override.
+    pub name: Option<String>,
 }

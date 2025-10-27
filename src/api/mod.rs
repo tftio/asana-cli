@@ -1,6 +1,7 @@
 //! Asana API client module providing authenticated HTTP access, pagination,
 //! and rate-limit aware retry logic.
 
+pub mod attachments;
 pub mod auth;
 pub mod client;
 pub mod custom_fields;
@@ -14,6 +15,9 @@ pub mod tasks;
 pub mod users;
 pub mod workspaces;
 
+pub use attachments::{
+    delete_attachment, download_attachment, get_attachment, list_attachments, upload_attachment,
+};
 pub use auth::{AuthToken, StaticTokenProvider, TokenProvider};
 pub use client::{ApiClient, ApiClientBuilder, ApiClientOptions};
 pub use custom_fields::{get_custom_field, list_custom_fields};

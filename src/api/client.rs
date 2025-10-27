@@ -448,6 +448,74 @@ impl ApiClient {
         Ok(())
     }
 
+    /// POST multipart form data.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the network request fails or the response cannot be deserialized.
+    pub async fn post_multipart<R>(
+        &self,
+        path: &str,
+        form: reqwest::multipart::Form,
+    ) -> Result<R, ApiError>
+    where
+        R: DeserializeOwned,
+    {
+        let url = format!("{}{path}", self.options.base_url);
+
+        let response = self
+            .http
+            .post(&url)
+            .header("Authorization", format!("Bearer {}", self.token.expose()))
+            .multipart(form)
+            .send()
+            .await?;
+
+        let status = response.status();
+        let bytes = response.bytes().await?;
+
+        if !status.is_success() {
+            let message = String::from_utf8_lossy(&bytes).to_string();
+            return Err(ApiError::Http {
+                status,
+                message,
+                details: None,
+            });
+        }
+
+        Self::parse_response(path, &bytes)
+    }
+
+    /// Download file from URL.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the network request fails or the download fails.
+    pub async fn download_file(&self, url: &str) -> Result<Vec<u8>, ApiError> {
+        let response = self
+            .http
+            .get(url)
+            .header("Authorization", format!("Bearer {}", self.token.expose()))
+            .send()
+            .await?;
+
+        if !response.status().is_success() {
+            let status = response.status();
+            let message = response
+                .text()
+                .await
+                .unwrap_or_else(|_| "Download failed".to_string());
+            return Err(ApiError::Http {
+                status,
+                message,
+                details: None,
+            });
+        }
+
+        let bytes = response.bytes().await?;
+        Ok(bytes.to_vec())
+    }
+
     /// Stream paginated endpoints as a series of pages (`Vec<T>`).
     pub fn paginate<T>(
         &self,

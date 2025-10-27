@@ -6,9 +6,10 @@ use crate::{
     config::Config,
     error::Result,
     models::{
-        CustomFieldValue, StoryCreateBuilder, StoryListParams, StoryUpdateBuilder, Task,
-        TaskCreateBuilder, TaskCreateRequest, TaskListParams, TaskReference, TaskSearchParams,
-        TaskSort, TaskUpdateBuilder, TaskUpdateRequest, TaskValidationError,
+        AttachmentListParams, AttachmentUploadParams, CustomFieldValue, StoryCreateBuilder,
+        StoryListParams, StoryUpdateBuilder, Task, TaskCreateBuilder, TaskCreateRequest,
+        TaskListParams, TaskReference, TaskSearchParams, TaskSort, TaskUpdateBuilder,
+        TaskUpdateRequest, TaskValidationError,
     },
     output::{
         TaskOutputFormat,
@@ -88,6 +89,11 @@ pub enum TaskCommand {
     Comments {
         #[command(subcommand)]
         command: TaskCommentsCommand,
+    },
+    /// Manage task attachments.
+    Attachments {
+        #[command(subcommand)]
+        command: TaskAttachmentsCommand,
     },
     /// Move a task to a section within a project.
     MoveToSection(TaskMoveToSectionArgs),
@@ -852,6 +858,85 @@ pub struct TaskCommentsDeleteArgs {
     pub yes: bool,
 }
 
+/// Subcommands for attachments management.
+#[derive(Subcommand, Debug)]
+pub enum TaskAttachmentsCommand {
+    /// List attachments on a task.
+    List(TaskAttachmentsListArgs),
+    /// Upload an attachment to a task.
+    Upload(TaskAttachmentsUploadArgs),
+    /// Download an attachment.
+    Download(TaskAttachmentsDownloadArgs),
+    /// Show attachment details.
+    Show(TaskAttachmentsShowArgs),
+    /// Delete an attachment.
+    Delete(TaskAttachmentsDeleteArgs),
+}
+
+/// Arguments for listing attachments on a task.
+#[derive(Args, Debug)]
+pub struct TaskAttachmentsListArgs {
+    /// Task identifier.
+    #[arg(value_name = "TASK")]
+    pub task: String,
+    /// Maximum number to retrieve.
+    #[arg(long)]
+    pub limit: Option<usize>,
+    /// Output format.
+    #[arg(long, value_enum, default_value = "table")]
+    pub format: TaskOutputFormat,
+}
+
+/// Arguments for uploading an attachment.
+#[derive(Args, Debug)]
+pub struct TaskAttachmentsUploadArgs {
+    /// Task identifier.
+    #[arg(value_name = "TASK")]
+    pub task: String,
+    /// File path to upload.
+    #[arg(long)]
+    pub file: PathBuf,
+    /// Optional filename override.
+    #[arg(long)]
+    pub name: Option<String>,
+    /// Output format.
+    #[arg(long, value_enum, default_value = "detail")]
+    pub format: TaskOutputFormat,
+}
+
+/// Arguments for downloading an attachment.
+#[derive(Args, Debug)]
+pub struct TaskAttachmentsDownloadArgs {
+    /// Attachment identifier.
+    #[arg(value_name = "ATTACHMENT")]
+    pub attachment: String,
+    /// Output file path.
+    #[arg(long)]
+    pub output: PathBuf,
+}
+
+/// Arguments for showing attachment details.
+#[derive(Args, Debug)]
+pub struct TaskAttachmentsShowArgs {
+    /// Attachment identifier.
+    #[arg(value_name = "ATTACHMENT")]
+    pub attachment: String,
+    /// Output format.
+    #[arg(long, value_enum, default_value = "detail")]
+    pub format: TaskOutputFormat,
+}
+
+/// Arguments for deleting an attachment.
+#[derive(Args, Debug)]
+pub struct TaskAttachmentsDeleteArgs {
+    /// Attachment identifier.
+    #[arg(value_name = "ATTACHMENT")]
+    pub attachment: String,
+    /// Skip confirmation.
+    #[arg(long)]
+    pub yes: bool,
+}
+
 /// Arguments for moving a task to a section.
 #[derive(Args, Debug)]
 pub struct TaskMoveToSectionArgs {
@@ -903,6 +988,9 @@ pub fn handle_task_command(command: TaskCommand, config: &Config) -> Result<()> 
             TaskCommand::Followers { command } => handle_followers_command(&client, command).await,
             TaskCommand::Tags { command } => handle_tags_command(&client, command).await,
             TaskCommand::Comments { command } => handle_comments_command(&client, command).await,
+            TaskCommand::Attachments { command } => {
+                handle_attachments_command(&client, command).await
+            }
             TaskCommand::MoveToSection(args) => move_to_section_command(&client, args).await,
         }
     })
@@ -1834,6 +1922,170 @@ async fn handle_comments_command(client: &ApiClient, command: TaskCommentsComman
             println!("Deleted comment {}.", args.comment);
             Ok(())
         }
+    }
+}
+
+#[allow(clippy::too_many_lines)]
+async fn handle_attachments_command(
+    client: &ApiClient,
+    command: TaskAttachmentsCommand,
+) -> Result<()> {
+    match command {
+        TaskAttachmentsCommand::List(args) => {
+            let params = AttachmentListParams {
+                task_gid: args.task.clone(),
+                limit: args.limit,
+            };
+            let attachments = api::list_attachments(client, params).await?;
+
+            if attachments.is_empty() {
+                println!("No attachments on task {}.", args.task);
+                return Ok(());
+            }
+
+            match args.format {
+                TaskOutputFormat::Table => {
+                    if stdout().is_terminal() {
+                        println!(
+                            "{:<20} {:<40} {:<10} {}",
+                            "GID".bold(),
+                            "Name".bold(),
+                            "Size".bold(),
+                            "Created".bold()
+                        );
+                        println!("{}", "─".repeat(90));
+                    }
+                    for attachment in &attachments {
+                        let size = attachment
+                            .size
+                            .map_or_else(|| "N/A".to_string(), format_bytes);
+                        let created = attachment.created_at.as_deref().unwrap_or("N/A");
+
+                        if stdout().is_terminal() {
+                            println!(
+                                "{:<20} {:<40} {:<10} {}",
+                                attachment.gid, attachment.name, size, created
+                            );
+                        } else {
+                            println!(
+                                "{}\t{}\t{}\t{}",
+                                attachment.gid, attachment.name, size, created
+                            );
+                        }
+                    }
+                    if stdout().is_terminal() {
+                        println!("\n{} attachments listed.", attachments.len());
+                    }
+                }
+                TaskOutputFormat::Json => {
+                    let json = serde_json::to_string_pretty(&attachments)
+                        .context("failed to serialize attachments to JSON")?;
+                    println!("{json}");
+                }
+                _ => {
+                    for attachment in &attachments {
+                        println!("{}: {}", attachment.gid, attachment.name);
+                    }
+                }
+            }
+            Ok(())
+        }
+        TaskAttachmentsCommand::Upload(args) => {
+            let params = AttachmentUploadParams {
+                task_gid: args.task.clone(),
+                file_path: args.file.clone(),
+                name: args.name.clone(),
+            };
+
+            println!("Uploading {}...", args.file.display());
+            let attachment = api::upload_attachment(client, params).await?;
+
+            if args.format == TaskOutputFormat::Json {
+                let json = serde_json::to_string_pretty(&attachment)
+                    .context("failed to serialize attachment to JSON")?;
+                println!("{json}");
+            } else {
+                println!(
+                    "Uploaded attachment {} to task {}.",
+                    attachment.gid, args.task
+                );
+                println!("Name: {}", attachment.name);
+                if let Some(size) = attachment.size {
+                    println!("Size: {}", format_bytes(size));
+                }
+            }
+            Ok(())
+        }
+        TaskAttachmentsCommand::Download(args) => {
+            println!("Downloading attachment {}...", args.attachment);
+            api::download_attachment(client, &args.attachment, &args.output).await?;
+            println!("Downloaded to {}", args.output.display());
+            Ok(())
+        }
+        TaskAttachmentsCommand::Show(args) => {
+            let attachment = api::get_attachment(client, &args.attachment).await?;
+
+            if args.format == TaskOutputFormat::Json {
+                let json = serde_json::to_string_pretty(&attachment)
+                    .context("failed to serialize attachment to JSON")?;
+                println!("{json}");
+            } else {
+                let gid = &attachment.gid;
+                let name = &attachment.name;
+                println!("GID: {gid}");
+                println!("Name: {name}");
+                if let Some(size) = attachment.size {
+                    println!("Size: {}", format_bytes(size));
+                }
+                if let Some(ref created) = attachment.created_at {
+                    println!("Created: {created}");
+                }
+                if let Some(ref host) = attachment.host {
+                    println!("Host: {host}");
+                }
+                if let Some(ref url) = attachment.download_url {
+                    println!("Download URL: {url}");
+                }
+                if let Some(ref url) = attachment.permanent_url {
+                    println!("Permanent URL: {url}");
+                }
+            }
+            Ok(())
+        }
+        TaskAttachmentsCommand::Delete(args) => {
+            if !args.yes {
+                let confirm = Confirm::with_theme(&ColorfulTheme::default())
+                    .with_prompt(format!("Delete attachment {}?", args.attachment))
+                    .default(false)
+                    .interact()?;
+
+                if !confirm {
+                    println!("Cancelled.");
+                    return Ok(());
+                }
+            }
+
+            api::delete_attachment(client, &args.attachment).await?;
+            println!("Deleted attachment {}.", args.attachment);
+            Ok(())
+        }
+    }
+}
+
+#[allow(clippy::cast_precision_loss)]
+fn format_bytes(bytes: u64) -> String {
+    const KB: u64 = 1024;
+    const MB: u64 = KB * 1024;
+    const GB: u64 = MB * 1024;
+
+    if bytes >= GB {
+        format!("{:.2} GB", bytes as f64 / GB as f64)
+    } else if bytes >= MB {
+        format!("{:.2} MB", bytes as f64 / MB as f64)
+    } else if bytes >= KB {
+        format!("{:.2} KB", bytes as f64 / KB as f64)
+    } else {
+        format!("{bytes} B")
     }
 }
 

@@ -10,7 +10,7 @@ pub mod task;
 pub mod user;
 pub mod workspace;
 
-pub use attachment::Attachment;
+pub use attachment::{Attachment, AttachmentListParams, AttachmentUploadParams};
 pub use custom_field::{
     CustomField, CustomFieldDateValue, CustomFieldEnumOption, CustomFieldType, CustomFieldValue,
 };
