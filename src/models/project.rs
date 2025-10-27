@@ -23,7 +23,7 @@ pub enum MemberPermission {
 /// Full project payload returned from Asana.
 #[serde_as]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct Project {
     /// Project identifier.
     pub gid: String,
@@ -107,7 +107,7 @@ pub struct ProjectMember {
 
 /// Summary of a project status update.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct ProjectStatus {
     /// Status identifier.
     pub gid: String,
@@ -253,7 +253,7 @@ fn field_value(project: &Project, field: &str) -> Option<String> {
 
 /// Request payload for creating a project.
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct ProjectCreateData {
     /// Name of the new project.
     pub name: String,
@@ -298,7 +298,7 @@ pub struct ProjectCreateRequest {
 
 /// Request payload for updating existing projects.
 #[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct ProjectUpdateData {
     /// New project name.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -350,7 +350,7 @@ pub struct ProjectUpdateRequest {
 
 /// Template definition stored on disk.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct ProjectTemplate {
     /// Template name for display.
     pub name: String,

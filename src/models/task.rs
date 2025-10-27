@@ -13,7 +13,7 @@ use thiserror::Error;
 
 /// Lightweight reference to a task or subtask.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct TaskReference {
     /// Globally unique identifier.
     pub gid: String,
@@ -35,7 +35,7 @@ impl TaskReference {
 
 /// Task membership metadata linking it to projects and sections.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct TaskMembership {
     /// Parent project reference.
     #[serde(default)]
@@ -47,7 +47,7 @@ pub struct TaskMembership {
 
 /// Compact project reference used within task payloads.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Ord, PartialOrd)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct TaskProjectReference {
     /// Globally unique identifier.
     pub gid: String,
@@ -69,7 +69,7 @@ impl TaskProjectReference {
 
 /// Compact section reference.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct TaskSectionReference {
     /// Globally unique identifier.
     pub gid: String,
@@ -91,7 +91,7 @@ impl TaskSectionReference {
 
 /// Compact tag reference used within tasks.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Ord, PartialOrd)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct TaskTagReference {
     /// Globally unique identifier.
     pub gid: String,
@@ -138,7 +138,7 @@ impl Default for TaskAssigneeStatus {
 
 /// Full task payload returned by the Asana API.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct Task {
     /// Globally unique identifier.
     pub gid: String,
@@ -453,7 +453,7 @@ impl TaskSearchParams {
 
 /// Payload for creating tasks.
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct TaskCreateData {
     /// Task name (required).
     pub name: String,
@@ -687,7 +687,7 @@ impl TaskCreateBuilder {
 /// sending `null` clears it.
 #[allow(clippy::option_option)]
 #[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct TaskUpdateData {
     /// Task name update.
     #[serde(skip_serializing_if = "Option::is_none")]

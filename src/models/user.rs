@@ -42,7 +42,7 @@ pub struct UserIdentity {
 
 /// User photo URLs at different sizes.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 #[allow(clippy::struct_field_names)]
 pub struct UserPhoto {
     /// 21x21 pixel image URL.
@@ -69,7 +69,7 @@ pub struct UserPhoto {
 
 /// Full user payload.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct User {
     /// Globally unique identifier.
     pub gid: String,

@@ -25,7 +25,7 @@ impl WorkspaceReference {
 
 /// Full workspace payload.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct Workspace {
     /// Globally unique identifier.
     pub gid: String,

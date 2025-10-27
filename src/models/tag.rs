@@ -7,7 +7,7 @@ use thiserror::Error;
 
 /// Compact tag reference used in listings.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Ord, PartialOrd)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct TagCompact {
     /// Globally unique identifier.
     pub gid: String,
@@ -73,7 +73,7 @@ pub enum TagColor {
 
 /// Full tag payload returned by the Asana API.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct Tag {
     /// Globally unique identifier.
     pub gid: String,
@@ -121,7 +121,7 @@ impl TagListParams {
 
 /// Payload for creating tags.
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct TagCreateData {
     /// Tag name (required).
     pub name: String,
@@ -225,7 +225,7 @@ impl TagCreateBuilder {
 /// sending `null` clears it.
 #[allow(clippy::option_option)]
 #[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct TagUpdateData {
     /// Tag name update.
     #[serde(skip_serializing_if = "Option::is_none")]

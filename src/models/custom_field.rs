@@ -37,7 +37,7 @@ impl Default for CustomFieldType {
 
 /// Enumeration option metadata.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct CustomFieldEnumOption {
     /// Globally unique identifier.
     pub gid: String,
@@ -56,7 +56,7 @@ pub struct CustomFieldEnumOption {
 
 /// Date-based custom field payload.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct CustomFieldDateValue {
     /// Single date value (YYYY-MM-DD).
     #[serde(default)]
@@ -71,7 +71,7 @@ pub struct CustomFieldDateValue {
 
 /// Fully hydrated custom field value record returned on tasks.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct CustomField {
     /// Globally unique identifier.
     pub gid: String,

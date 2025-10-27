@@ -17,7 +17,7 @@ pub enum StoryType {
 
 /// Compact story reference.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 #[allow(clippy::struct_field_names)]
 pub struct StoryCompact {
     /// Globally unique identifier.
@@ -32,7 +32,7 @@ pub struct StoryCompact {
 
 /// Full story payload.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 #[allow(clippy::struct_field_names)]
 pub struct Story {
     /// Globally unique identifier.
@@ -77,7 +77,7 @@ pub struct StoryListParams {
 
 /// Payload for creating stories.
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct StoryCreateData {
     /// Plain text content (required, mutually exclusive with `html_text`).
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -152,7 +152,7 @@ impl StoryCreateBuilder {
 
 /// Payload for updating stories.
 #[derive(Debug, Clone, Serialize, Default, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct StoryUpdateData {
     /// Updated plain text.
     #[serde(skip_serializing_if = "Option::is_none")]

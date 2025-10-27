@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 /// Compact section reference used in task memberships and other contexts.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Ord, PartialOrd)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct SectionReference {
     /// Globally unique identifier.
     pub gid: String,
@@ -26,7 +26,7 @@ impl SectionReference {
 
 /// Full section payload returned from Asana.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct Section {
     /// Section identifier.
     pub gid: String,
@@ -48,7 +48,7 @@ pub struct Section {
 
 /// Compact project reference used within section payloads.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Ord, PartialOrd)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct SectionProjectReference {
     /// Globally unique identifier.
     pub gid: String,
@@ -70,7 +70,7 @@ impl SectionProjectReference {
 
 /// Payload for creating a section in a project.
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct SectionCreateData {
     /// Section name (required).
     pub name: String,
@@ -91,7 +91,7 @@ pub struct SectionCreateRequest {
 
 /// Payload for adding a task to a section.
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct AddTaskToSectionData {
     /// Task gid to add to the section.
     pub task: String,
@@ -145,8 +145,8 @@ mod tests {
         };
         let json = serde_json::to_string(&request).unwrap();
         assert!(json.contains("\"name\":\"New Section\""));
-        assert!(json.contains("\"insertAfter\":\"789\""));
-        assert!(!json.contains("insertBefore"));
+        assert!(json.contains("\"insert_after\":\"789\""));
+        assert!(!json.contains("insert_before"));
     }
 
     #[test]
@@ -160,7 +160,7 @@ mod tests {
         };
         let json = serde_json::to_string(&request).unwrap();
         assert!(json.contains("\"task\":\"task123\""));
-        assert!(json.contains("\"insertBefore\":\"task456\""));
-        assert!(!json.contains("insertAfter"));
+        assert!(json.contains("\"insert_before\":\"task456\""));
+        assert!(!json.contains("insert_after"));
     }
 }

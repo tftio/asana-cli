@@ -5,7 +5,7 @@ use std::path::PathBuf;
 
 /// File attachment associated with a task or comment.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct Attachment {
     /// Globally unique identifier.
     pub gid: String,
