@@ -1,7 +1,9 @@
 //! Command-line interface entry points for the Asana CLI.
 
+mod custom_field;
 mod project;
 mod section;
+mod tag;
 mod task;
 
 use crate::api::{ApiClient, ApiError, AuthToken};
@@ -11,6 +13,7 @@ use anyhow::{Context, anyhow};
 use clap::{Parser, Subcommand};
 use clap_complete::Shell;
 use colored::Colorize;
+use custom_field::CustomFieldCommand;
 use project::ProjectCommand;
 use secrecy::SecretString;
 use section::SectionCommand;
@@ -18,6 +21,7 @@ use serde_json::Value;
 use std::fs::{self, File};
 use std::io::{self, Write};
 use std::path::PathBuf;
+use tag::TagCommand;
 use task::TaskCommand;
 use tokio::runtime::Builder as RuntimeBuilder;
 use tracing::{debug, info};
@@ -65,6 +69,17 @@ enum Commands {
     Section {
         #[command(subcommand)]
         command: Box<SectionCommand>,
+    },
+    /// Tag operations.
+    Tag {
+        #[command(subcommand)]
+        command: Box<TagCommand>,
+    },
+    /// Custom field operations.
+    #[command(name = "custom-field")]
+    CustomField {
+        #[command(subcommand)]
+        command: Box<CustomFieldCommand>,
     },
     /// Generate shell completion scripts.
     Completions {
@@ -182,6 +197,14 @@ pub fn run() -> Result<i32> {
             handle_section_command(*command, &config)?;
             0
         }
+        Commands::Tag { command } => {
+            handle_tag_command(*command, &config)?;
+            0
+        }
+        Commands::CustomField { command } => {
+            handle_custom_field_command(*command, &config)?;
+            0
+        }
         Commands::Completions { shell } => {
             workhelix_cli_common::completions::generate_completions::<Cli>(shell);
             0
@@ -195,7 +218,7 @@ pub fn run() -> Result<i32> {
 
             impl DoctorChecks for AsanaCliDoctor {
                 fn repo_info() -> RepoInfo {
-                    RepoInfo::new("tftio", "asana-cli", "v")
+                    RepoInfo::new("tftio", "asana-cli")
                 }
 
                 fn current_version() -> &'static str {
@@ -213,20 +236,15 @@ pub fn run() -> Result<i32> {
             exit
         }
         Commands::Update {
-            version,
-            force,
-            install_dir,
+            version: _,
+            force: _,
+            install_dir: _,
         } => {
-            let repo_info = RepoInfo::new("tftio", "asana-cli", "v");
-            let exit = workhelix_cli_common::update::run_update(
-                &repo_info,
-                VERSION,
-                version.as_deref(),
-                force,
-                install_dir.as_deref(),
+            eprintln!(
+                "Self-update feature has been removed. Please install the latest version manually."
             );
-            info!(exit_code = exit, "update command completed");
-            exit
+            eprintln!("Visit: https://github.com/tftio/asana-cli/releases");
+            1
         }
     };
 
@@ -456,4 +474,12 @@ fn handle_project_command(command: ProjectCommand, config: &Config) -> Result<()
 
 fn handle_section_command(command: SectionCommand, config: &Config) -> Result<()> {
     section::execute_section_command(command, config)
+}
+
+fn handle_tag_command(command: TagCommand, config: &Config) -> Result<()> {
+    tag::handle_tag_command(command, config)
+}
+
+fn handle_custom_field_command(command: CustomFieldCommand, config: &Config) -> Result<()> {
+    custom_field::handle_custom_field_command(command, config)
 }

@@ -4,6 +4,8 @@ pub mod attachment;
 pub mod custom_field;
 pub mod project;
 pub mod section;
+pub mod story;
+pub mod tag;
 pub mod task;
 pub mod user;
 pub mod workspace;
@@ -20,6 +22,14 @@ pub use project::{
 pub use section::{
     AddTaskToSectionData, AddTaskToSectionRequest, Section, SectionCreateData,
     SectionCreateRequest, SectionProjectReference, SectionReference,
+};
+pub use story::{
+    Story, StoryCompact, StoryCreateBuilder, StoryCreateData, StoryCreateRequest, StoryListParams,
+    StoryType, StoryUpdateBuilder, StoryUpdateData, StoryUpdateRequest, StoryValidationError,
+};
+pub use tag::{
+    Tag, TagColor, TagCompact, TagCreateBuilder, TagCreateData, TagCreateRequest, TagListParams,
+    TagUpdateBuilder, TagUpdateData, TagUpdateRequest, TagValidationError,
 };
 pub use task::{
     Task, TaskAssigneeStatus, TaskCreateBuilder, TaskCreateData, TaskCreateRequest, TaskListParams,

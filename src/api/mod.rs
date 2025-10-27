@@ -3,14 +3,18 @@
 
 pub mod auth;
 pub mod client;
+pub mod custom_fields;
 pub mod error;
 pub mod pagination;
 pub mod projects;
 pub mod sections;
+pub mod stories;
+pub mod tags;
 pub mod tasks;
 
 pub use auth::{AuthToken, StaticTokenProvider, TokenProvider};
 pub use client::{ApiClient, ApiClientBuilder, ApiClientOptions};
+pub use custom_fields::{get_custom_field, list_custom_fields};
 pub use error::{ApiError, RateLimitInfo};
 pub use pagination::{ListResponse, PaginationInfo};
 pub use projects::{
@@ -20,8 +24,11 @@ pub use projects::{
 pub use sections::{
     add_task_to_section, create_section, get_section, get_section_tasks, list_sections,
 };
+pub use stories::{create_story, delete_story, get_story, list_stories, update_story};
+pub use tags::{create_tag, delete_tag, get_tag, list_tags, update_tag};
 pub use tasks::{
-    add_dependencies, add_dependents, add_followers, add_project, create_task, delete_task,
-    get_task, list_dependencies, list_dependents, list_subtasks, list_tasks, remove_dependencies,
-    remove_dependents, remove_followers, remove_project, update_task,
+    add_dependencies, add_dependents, add_followers, add_project, add_tag, create_task,
+    delete_task, get_task, list_dependencies, list_dependents, list_subtasks, list_tasks,
+    remove_dependencies, remove_dependents, remove_followers, remove_project, remove_tag,
+    update_task,
 };

@@ -360,6 +360,34 @@ pub async fn remove_followers(
         .await
 }
 
+/// Add a tag to a task.
+///
+/// # Errors
+///
+/// Returns an error if the API request fails.
+pub async fn add_tag(client: &ApiClient, gid: &str, tag: String) -> Result<(), ApiError> {
+    let payload = TagModifyRequest {
+        data: TagModifyData { tag },
+    };
+    client
+        .post_void(&format!("/tasks/{gid}/addTag"), &payload)
+        .await
+}
+
+/// Remove a tag from a task.
+///
+/// # Errors
+///
+/// Returns an error if the API request fails.
+pub async fn remove_tag(client: &ApiClient, gid: &str, tag: String) -> Result<(), ApiError> {
+    let payload = TagModifyRequest {
+        data: TagModifyData { tag },
+    };
+    client
+        .post_void(&format!("/tasks/{gid}/removeTag"), &payload)
+        .await
+}
+
 fn ensure_default_fields(params: &mut TaskListParams) {
     let defaults = [
         "gid",
@@ -527,4 +555,14 @@ struct FollowersModifyRequest {
 struct FollowersList {
     #[serde(skip_serializing_if = "Vec::is_empty")]
     followers: Vec<String>,
+}
+
+#[derive(Debug, Serialize)]
+struct TagModifyRequest {
+    data: TagModifyData,
+}
+
+#[derive(Debug, Serialize)]
+struct TagModifyData {
+    tag: String,
 }

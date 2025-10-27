@@ -6,8 +6,9 @@ use crate::{
     config::Config,
     error::Result,
     models::{
-        CustomFieldValue, Task, TaskCreateBuilder, TaskCreateRequest, TaskListParams,
-        TaskReference, TaskSort, TaskUpdateBuilder, TaskUpdateRequest, TaskValidationError,
+        CustomFieldValue, StoryCreateBuilder, StoryListParams, StoryUpdateBuilder, Task,
+        TaskCreateBuilder, TaskCreateRequest, TaskListParams, TaskReference, TaskSort,
+        TaskUpdateBuilder, TaskUpdateRequest, TaskValidationError,
     },
     output::{
         TaskOutputFormat,
@@ -17,6 +18,7 @@ use crate::{
 use anyhow::{Context, anyhow, bail};
 use chrono::Utc;
 use clap::{Args, Subcommand, ValueEnum};
+use colored::Colorize;
 use dialoguer::{Confirm, FuzzySelect, Input, theme::ColorfulTheme};
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
@@ -76,6 +78,16 @@ pub enum TaskCommand {
     Followers {
         #[command(subcommand)]
         command: TaskFollowerCommand,
+    },
+    /// Manage task tags.
+    Tags {
+        #[command(subcommand)]
+        command: TaskTagCommand,
+    },
+    /// Manage task comments (stories).
+    Comments {
+        #[command(subcommand)]
+        command: TaskCommentsCommand,
     },
     /// Move a task to a section within a project.
     MoveToSection(TaskMoveToSectionArgs),
@@ -591,6 +603,17 @@ pub enum TaskFollowerCommand {
     Remove(TaskFollowerModifyArgs),
 }
 
+/// Subcommands for tag management.
+#[derive(Subcommand, Debug)]
+pub enum TaskTagCommand {
+    /// Add a tag to the task.
+    Add(TaskTagModifyArgs),
+    /// Remove a tag from the task.
+    Remove(TaskTagModifyArgs),
+    /// List tags on the task.
+    List(TaskTagListArgs),
+}
+
 /// Arguments for dependency listing.
 #[derive(Args, Debug)]
 pub struct TaskDependencyListArgs {
@@ -671,6 +694,116 @@ pub struct TaskFollowerModifyArgs {
     pub followers: Vec<String>,
 }
 
+/// Arguments for tag modification.
+#[derive(Args, Debug)]
+pub struct TaskTagModifyArgs {
+    /// Task identifier.
+    #[arg(value_name = "TASK")]
+    pub task: String,
+    /// Tag identifier to add or remove.
+    #[arg(long = "tag", value_name = "TAG")]
+    pub tag: String,
+}
+
+/// Arguments for listing tags on a task.
+#[derive(Args, Debug)]
+pub struct TaskTagListArgs {
+    /// Task identifier.
+    #[arg(value_name = "TASK")]
+    pub task: String,
+    /// Output format.
+    #[arg(long, value_enum, default_value = "table")]
+    pub format: TaskOutputFormat,
+}
+
+/// Subcommands for comments (stories) management.
+#[derive(Subcommand, Debug)]
+pub enum TaskCommentsCommand {
+    /// List comments on a task.
+    List(TaskCommentsListArgs),
+    /// Add a comment to a task.
+    Add(TaskCommentsAddArgs),
+    /// Show a specific comment.
+    Show(TaskCommentsShowArgs),
+    /// Update a comment.
+    Update(TaskCommentsUpdateArgs),
+    /// Delete a comment.
+    Delete(TaskCommentsDeleteArgs),
+}
+
+/// Arguments for listing comments on a task.
+#[derive(Args, Debug)]
+pub struct TaskCommentsListArgs {
+    /// Task identifier.
+    #[arg(value_name = "TASK")]
+    pub task: String,
+    /// Maximum number to retrieve.
+    #[arg(long)]
+    pub limit: Option<usize>,
+    /// Output format.
+    #[arg(long, value_enum, default_value = "table")]
+    pub format: TaskOutputFormat,
+}
+
+/// Arguments for adding a comment to a task.
+#[derive(Args, Debug)]
+pub struct TaskCommentsAddArgs {
+    /// Task identifier.
+    #[arg(value_name = "TASK")]
+    pub task: String,
+    /// Comment text.
+    #[arg(long)]
+    pub text: String,
+    /// Pin the comment.
+    #[arg(long)]
+    pub pin: bool,
+    /// Output format.
+    #[arg(long, value_enum, default_value = "detail")]
+    pub format: TaskOutputFormat,
+}
+
+/// Arguments for showing a specific comment.
+#[derive(Args, Debug)]
+pub struct TaskCommentsShowArgs {
+    /// Comment identifier.
+    #[arg(value_name = "COMMENT")]
+    pub comment: String,
+    /// Output format.
+    #[arg(long, value_enum, default_value = "detail")]
+    pub format: TaskOutputFormat,
+}
+
+/// Arguments for updating a comment.
+#[derive(Args, Debug)]
+pub struct TaskCommentsUpdateArgs {
+    /// Comment identifier.
+    #[arg(value_name = "COMMENT")]
+    pub comment: String,
+    /// Updated text.
+    #[arg(long)]
+    pub text: Option<String>,
+    /// Pin the comment.
+    #[arg(long)]
+    pub pin: bool,
+    /// Unpin the comment.
+    #[arg(long)]
+    pub unpin: bool,
+    /// Output format.
+    #[arg(long, value_enum, default_value = "detail")]
+    pub format: TaskOutputFormat,
+}
+
+/// Arguments for deleting a comment.
+#[derive(Args, Debug)]
+pub struct TaskCommentsDeleteArgs {
+    /// Comment identifier.
+    #[arg(value_name = "COMMENT")]
+    pub comment: String,
+    /// Skip confirmation.
+    #[arg(long)]
+    pub yes: bool,
+}
+
 /// Arguments for moving a task to a section.
 #[derive(Args, Debug)]
 pub struct TaskMoveToSectionArgs {
@@ -720,6 +853,8 @@ pub fn handle_task_command(command: TaskCommand, config: &Config) -> Result<()> 
             TaskCommand::Blocks { command } => handle_dependents_command(&client, command).await,
             TaskCommand::Projects { command } => handle_projects_command(&client, command).await,
             TaskCommand::Followers { command } => handle_followers_command(&client, command).await,
+            TaskCommand::Tags { command } => handle_tags_command(&client, command).await,
+            TaskCommand::Comments { command } => handle_comments_command(&client, command).await,
             TaskCommand::MoveToSection(args) => move_to_section_command(&client, args).await,
         }
     })
@@ -1417,6 +1552,243 @@ async fn handle_followers_command(client: &ApiClient, command: TaskFollowerComma
                 if args.followers.len() == 1 { "" } else { "s" },
                 args.task
             );
+            Ok(())
+        }
+    }
+}
+
+async fn handle_tags_command(client: &ApiClient, command: TaskTagCommand) -> Result<()> {
+    match command {
+        TaskTagCommand::Add(args) => {
+            api::add_tag(client, &args.task, args.tag.clone()).await?;
+            println!("Added tag {} to task {}.", args.tag, args.task);
+            Ok(())
+        }
+        TaskTagCommand::Remove(args) => {
+            api::remove_tag(client, &args.task, args.tag.clone()).await?;
+            println!("Removed tag {} from task {}.", args.tag, args.task);
+            Ok(())
+        }
+        TaskTagCommand::List(args) => {
+            let task = api::get_task(client, &args.task, vec![]).await?;
+
+            if task.tags.is_empty() {
+                println!("No tags on task {}.", args.task);
+                return Ok(());
+            }
+
+            match args.format {
+                TaskOutputFormat::Table => {
+                    if stdout().is_terminal() {
+                        println!("{:<20} {}", "GID".bold(), "Name".bold());
+                        println!("{}", "─".repeat(50));
+                    }
+                    for tag in &task.tags {
+                        if stdout().is_terminal() {
+                            println!("{:<20} {}", tag.gid, tag.label());
+                        } else {
+                            println!("{}\t{}", tag.gid, tag.label());
+                        }
+                    }
+                    if stdout().is_terminal() {
+                        println!("\n{} tags listed.", task.tags.len());
+                    }
+                }
+                TaskOutputFormat::Json => {
+                    let json = serde_json::to_string_pretty(&task.tags)
+                        .context("failed to serialize tags to JSON")?;
+                    println!("{json}");
+                }
+                _ => {
+                    for tag in &task.tags {
+                        println!("{}: {}", tag.gid, tag.label());
+                    }
+                }
+            }
+            Ok(())
+        }
+    }
+}
+
+#[allow(clippy::too_many_lines)]
+async fn handle_comments_command(client: &ApiClient, command: TaskCommentsCommand) -> Result<()> {
+    match command {
+        TaskCommentsCommand::List(args) => {
+            let params = StoryListParams {
+                task_gid: args.task.clone(),
+                limit: args.limit,
+            };
+            let stories = api::list_stories(client, params).await?;
+
+            if stories.is_empty() {
+                println!("No comments on task {}.", args.task);
+                return Ok(());
+            }
+
+            match args.format {
+                TaskOutputFormat::Table => {
+                    if stdout().is_terminal() {
+                        println!(
+                            "{:<20} {:<10} {:<15} {}",
+                            "GID".bold(),
+                            "Type".bold(),
+                            "Author".bold(),
+                            "Text".bold()
+                        );
+                        println!("{}", "─".repeat(80));
+                    }
+                    for story in &stories {
+                        let author = story
+                            .created_by
+                            .as_ref()
+                            .and_then(|u| u.name.as_deref())
+                            .unwrap_or("Unknown");
+                        let text = story.text.as_deref().unwrap_or("");
+                        let text_preview = if text.len() > 50 {
+                            format!("{}...", &text[..50])
+                        } else {
+                            text.to_string()
+                        };
+
+                        if stdout().is_terminal() {
+                            let pin_marker = if story.is_pinned { " 📌" } else { "" };
+                            println!(
+                                "{:<20} {:<10} {:<15} {}{}",
+                                story.gid,
+                                format!("{:?}", story.story_type),
+                                author,
+                                text_preview,
+                                pin_marker
+                            );
+                        } else {
+                            println!(
+                                "{}\t{:?}\t{}\t{}",
+                                story.gid, story.story_type, author, text_preview
+                            );
+                        }
+                    }
+                    if stdout().is_terminal() {
+                        println!("\n{} comments listed.", stories.len());
+                    }
+                }
+                TaskOutputFormat::Json => {
+                    let json = serde_json::to_string_pretty(&stories)
+                        .context("failed to serialize comments to JSON")?;
+                    println!("{json}");
+                }
+                _ => {
+                    for story in &stories {
+                        let author = story
+                            .created_by
+                            .as_ref()
+                            .and_then(|u| u.name.as_deref())
+                            .unwrap_or("Unknown");
+                        let text = story.text.as_deref().unwrap_or("");
+                        println!("Comment {}: [{}] {}", story.gid, author, text);
+                    }
+                }
+            }
+            Ok(())
+        }
+        TaskCommentsCommand::Add(args) => {
+            let request = StoryCreateBuilder::new(&args.text)
+                .pinned(args.pin)
+                .build()
+                .context("failed to build story create request")?;
+
+            let story = api::create_story(client, &args.task, request).await?;
+
+            if args.format == TaskOutputFormat::Json {
+                let json = serde_json::to_string_pretty(&story)
+                    .context("failed to serialize comment to JSON")?;
+                println!("{json}");
+            } else {
+                println!("Added comment {} to task {}.", story.gid, args.task);
+                if story.is_pinned {
+                    println!("Comment is pinned.");
+                }
+            }
+            Ok(())
+        }
+        TaskCommentsCommand::Show(args) => {
+            let story = api::get_story(client, &args.comment).await?;
+
+            if args.format == TaskOutputFormat::Json {
+                let json = serde_json::to_string_pretty(&story)
+                    .context("failed to serialize comment to JSON")?;
+                println!("{json}");
+            } else {
+                let gid = &story.gid;
+                println!("Comment: {gid}");
+                println!("Type: {:?}", story.story_type);
+                if let Some(ref author) = story.created_by {
+                    if let Some(ref name) = author.name {
+                        println!("Author: {name}");
+                    }
+                }
+                if let Some(ref created_at) = story.created_at {
+                    println!("Created: {created_at}");
+                }
+                if story.is_pinned {
+                    println!("Pinned: Yes");
+                }
+                if story.is_edited {
+                    println!("Edited: Yes");
+                }
+                if let Some(ref text) = story.text {
+                    println!("\nText:\n{text}");
+                }
+            }
+            Ok(())
+        }
+        TaskCommentsCommand::Update(args) => {
+            if args.pin && args.unpin {
+                bail!("Cannot specify both --pin and --unpin");
+            }
+
+            let mut builder = StoryUpdateBuilder::new();
+
+            if let Some(text) = args.text {
+                builder = builder.text(text);
+            }
+
+            if args.pin {
+                builder = builder.pinned(true);
+            } else if args.unpin {
+                builder = builder.pinned(false);
+            }
+
+            let request = builder
+                .build()
+                .context("failed to build story update request")?;
+
+            let story = api::update_story(client, &args.comment, request).await?;
+
+            if args.format == TaskOutputFormat::Json {
+                let json = serde_json::to_string_pretty(&story)
+                    .context("failed to serialize comment to JSON")?;
+                println!("{json}");
+            } else {
+                let gid = &story.gid;
+                println!("Updated comment {gid}.");
+            }
+            Ok(())
+        }
+        TaskCommentsCommand::Delete(args) => {
+            if !args.yes {
+                let confirm = Confirm::with_theme(&ColorfulTheme::default())
+                    .with_prompt(format!("Delete comment {}?", args.comment))
+                    .default(false)
+                    .interact()?;
+
+                if !confirm {
+                    println!("Cancelled.");
+                    return Ok(());
+                }
+            }
+
+            api::delete_story(client, &args.comment).await?;
+            println!("Deleted comment {}.", args.comment);
             Ok(())
         }
     }
