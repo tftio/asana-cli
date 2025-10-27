@@ -5,6 +5,8 @@ mod project;
 mod section;
 mod tag;
 mod task;
+mod user;
+mod workspace;
 
 use crate::api::{ApiClient, ApiError, AuthToken};
 use crate::config::Config;
@@ -25,7 +27,9 @@ use tag::TagCommand;
 use task::TaskCommand;
 use tokio::runtime::Builder as RuntimeBuilder;
 use tracing::{debug, info};
+use user::UserCommand;
 use workhelix_cli_common::{DoctorCheck, DoctorChecks, LicenseType, RepoInfo};
+use workspace::WorkspaceCommand;
 
 const MANPAGE_SOURCE: &str = include_str!("../../docs/man/asana-cli.1");
 
@@ -80,6 +84,16 @@ enum Commands {
     CustomField {
         #[command(subcommand)]
         command: Box<CustomFieldCommand>,
+    },
+    /// Workspace operations.
+    Workspace {
+        #[command(subcommand)]
+        command: Box<WorkspaceCommand>,
+    },
+    /// User operations.
+    User {
+        #[command(subcommand)]
+        command: Box<UserCommand>,
     },
     /// Generate shell completion scripts.
     Completions {
@@ -203,6 +217,14 @@ pub fn run() -> Result<i32> {
         }
         Commands::CustomField { command } => {
             handle_custom_field_command(*command, &config)?;
+            0
+        }
+        Commands::Workspace { command } => {
+            handle_workspace_command(*command, &config)?;
+            0
+        }
+        Commands::User { command } => {
+            handle_user_command(*command, &config)?;
             0
         }
         Commands::Completions { shell } => {
@@ -482,4 +504,12 @@ fn handle_tag_command(command: TagCommand, config: &Config) -> Result<()> {
 
 fn handle_custom_field_command(command: CustomFieldCommand, config: &Config) -> Result<()> {
     custom_field::handle_custom_field_command(command, config)
+}
+
+fn handle_workspace_command(command: WorkspaceCommand, config: &Config) -> Result<()> {
+    workspace::handle_workspace_command(command, config)
+}
+
+fn handle_user_command(command: UserCommand, config: &Config) -> Result<()> {
+    user::handle_user_command(command, config)
 }

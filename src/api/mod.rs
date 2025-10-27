@@ -11,6 +11,8 @@ pub mod sections;
 pub mod stories;
 pub mod tags;
 pub mod tasks;
+pub mod users;
+pub mod workspaces;
 
 pub use auth::{AuthToken, StaticTokenProvider, TokenProvider};
 pub use client::{ApiClient, ApiClientBuilder, ApiClientOptions};
@@ -32,3 +34,5 @@ pub use tasks::{
     remove_dependencies, remove_dependents, remove_followers, remove_project, remove_tag,
     update_task,
 };
+pub use users::{get_current_user, get_user, list_users};
+pub use workspaces::{get_workspace, list_workspaces};

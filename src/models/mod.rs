@@ -36,5 +36,5 @@ pub use task::{
     TaskMembership, TaskProjectReference, TaskReference, TaskSectionReference, TaskSort,
     TaskTagReference, TaskUpdateBuilder, TaskUpdateData, TaskUpdateRequest, TaskValidationError,
 };
-pub use user::{UserIdentity, UserReference};
-pub use workspace::WorkspaceReference;
+pub use user::{User, UserIdentity, UserListParams, UserPhoto, UserReference};
+pub use workspace::{Workspace, WorkspaceListParams, WorkspaceReference};

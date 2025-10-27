@@ -22,3 +22,29 @@ impl WorkspaceReference {
         self.name.clone().unwrap_or_else(|| self.gid.clone())
     }
 }
+
+/// Full workspace payload.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct Workspace {
+    /// Globally unique identifier.
+    pub gid: String,
+    /// Workspace name.
+    pub name: String,
+    /// Resource type marker.
+    #[serde(default)]
+    pub resource_type: Option<String>,
+    /// Email domains for organization (if applicable).
+    #[serde(default)]
+    pub email_domains: Vec<String>,
+    /// Whether workspace is an organization.
+    #[serde(default)]
+    pub is_organization: bool,
+}
+
+/// Parameters for listing workspaces.
+#[derive(Debug, Clone, Default)]
+pub struct WorkspaceListParams {
+    /// Maximum number to fetch.
+    pub limit: Option<usize>,
+}
