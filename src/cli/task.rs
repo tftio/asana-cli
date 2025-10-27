@@ -7,8 +7,8 @@ use crate::{
     error::Result,
     models::{
         CustomFieldValue, StoryCreateBuilder, StoryListParams, StoryUpdateBuilder, Task,
-        TaskCreateBuilder, TaskCreateRequest, TaskListParams, TaskReference, TaskSort,
-        TaskUpdateBuilder, TaskUpdateRequest, TaskValidationError,
+        TaskCreateBuilder, TaskCreateRequest, TaskListParams, TaskReference, TaskSearchParams,
+        TaskSort, TaskUpdateBuilder, TaskUpdateRequest, TaskValidationError,
     },
     output::{
         TaskOutputFormat,
@@ -19,12 +19,12 @@ use anyhow::{Context, anyhow, bail};
 use chrono::Utc;
 use clap::{Args, Subcommand, ValueEnum};
 use colored::Colorize;
-use dialoguer::{Confirm, FuzzySelect, Input, theme::ColorfulTheme};
+use dialoguer::{Confirm, Input, theme::ColorfulTheme};
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value, json};
 use std::{
-    collections::{HashSet, VecDeque},
+    collections::{BTreeSet, VecDeque},
     fmt::Write as FmtWrite,
     fs,
     io::{IsTerminal, stdout},
@@ -369,16 +369,64 @@ pub struct TaskBatchCompleteArgs {
 /// Arguments for `task search`.
 #[derive(Args, Debug)]
 pub struct TaskSearchArgs {
-    /// Search query (fuzzy).
-    #[arg(value_name = "QUERY")]
+    /// Full-text search query.
+    #[arg(long)]
     pub query: Option<String>,
-    /// Workspace to scope the search.
+    /// Workspace identifier (required).
     #[arg(long)]
     pub workspace: Option<String>,
-    /// Limit number of matches retrieved from the API.
-    #[arg(long, default_value_t = 50)]
-    pub limit: usize,
-    /// Only show recently accessed tasks.
+    /// Filter by assignee (gid or email).
+    #[arg(long)]
+    pub assignee: Option<String>,
+    /// Filter by project.
+    #[arg(long = "project", value_name = "PROJECT")]
+    pub projects: Vec<String>,
+    /// Filter by section.
+    #[arg(long = "section", value_name = "SECTION")]
+    pub sections: Vec<String>,
+    /// Filter by tag.
+    #[arg(long = "tag", value_name = "TAG")]
+    pub tags: Vec<String>,
+    /// Filter by completion status.
+    #[arg(long)]
+    pub completed: Option<bool>,
+    /// Include subtasks.
+    #[arg(long)]
+    pub include_subtasks: bool,
+    /// Filter blocked tasks.
+    #[arg(long)]
+    pub blocked: Option<bool>,
+    /// Filter tasks with attachments.
+    #[arg(long)]
+    pub has_attachments: Option<bool>,
+    /// Created after date (YYYY-MM-DD).
+    #[arg(long)]
+    pub created_after: Option<String>,
+    /// Created before date (YYYY-MM-DD).
+    #[arg(long)]
+    pub created_before: Option<String>,
+    /// Modified after date (YYYY-MM-DD).
+    #[arg(long)]
+    pub modified_after: Option<String>,
+    /// Modified before date (YYYY-MM-DD).
+    #[arg(long)]
+    pub modified_before: Option<String>,
+    /// Due after date (YYYY-MM-DD).
+    #[arg(long)]
+    pub due_after: Option<String>,
+    /// Due before date (YYYY-MM-DD).
+    #[arg(long)]
+    pub due_before: Option<String>,
+    /// Sort by field (`modified_at`, likes, `created_at`).
+    #[arg(long)]
+    pub sort_by: Option<String>,
+    /// Sort ascending (default: descending).
+    #[arg(long)]
+    pub sort_ascending: bool,
+    /// Maximum number to retrieve.
+    #[arg(long)]
+    pub limit: Option<usize>,
+    /// Only show recently accessed tasks (legacy mode).
     #[arg(long = "recent-only")]
     pub recent_only: bool,
     /// Output format override.
@@ -1337,9 +1385,9 @@ async fn search_task_command(
     config: &Config,
     args: TaskSearchArgs,
 ) -> Result<()> {
-    let recent_entries = load_recent_task_entries(config)?;
-
+    // Handle legacy recent-only mode
     if args.recent_only {
+        let recent_entries = load_recent_task_entries(config)?;
         if recent_entries.is_empty() {
             println!("No recent tasks recorded.");
             return Ok(());
@@ -1351,67 +1399,62 @@ async fn search_task_command(
         return Ok(());
     }
 
-    let params = TaskListParams {
-        workspace: args.workspace.clone().or_else(|| {
-            config
-                .default_workspace()
-                .map(std::string::ToString::to_string)
-        }),
-        limit: Some(args.limit),
-        ..Default::default()
+    // Get workspace
+    let workspace = args
+        .workspace
+        .clone()
+        .or_else(|| config.default_workspace().map(ToString::to_string))
+        .context("workspace is required; provide --workspace or set default_workspace in config")?;
+
+    // Build search params
+    let params = TaskSearchParams {
+        workspace,
+        text: args.query.clone(),
+        resource_subtype: None,
+        completed: args.completed,
+        is_subtask: if args.include_subtasks {
+            None
+        } else {
+            Some(false)
+        },
+        is_blocked: args.blocked,
+        has_attachment: args.has_attachments,
+        assignee: resolve_assignee(args.assignee.clone(), config, true),
+        projects: args.projects.clone(),
+        sections: args.sections.clone(),
+        tags: args.tags.clone(),
+        created_after: args.created_after.clone(),
+        created_before: args.created_before.clone(),
+        modified_after: args.modified_after.clone(),
+        modified_before: args.modified_before.clone(),
+        due_after: args.due_after.clone(),
+        due_before: args.due_before.clone(),
+        sort_by: args.sort_by.clone(),
+        sort_ascending: args.sort_ascending,
+        limit: args.limit,
+        fields: BTreeSet::new(),
     };
 
-    let mut tasks = api::list_tasks(client, params).await?;
-    let seen: HashSet<String> = tasks.iter().map(|task| task.gid.clone()).collect();
-    for entry in &recent_entries {
-        if seen.contains(&entry.gid) {
-            continue;
-        }
-        tasks.push(recent_entry_to_task(entry));
-    }
+    // Execute search
+    let tasks = api::search_tasks(client, params).await?;
 
-    if let Some(query) = args.query.as_ref() {
-        let matches = filter_by_fuzzy(tasks, query);
-        if matches.is_empty() {
+    if tasks.is_empty() {
+        if let Some(ref query) = args.query {
             println!("No tasks matched '{query}'.");
-            return Ok(());
-        }
-        let format = determine_output(args.output);
-        let rendered = render_task_list(&matches, format, stdout().is_terminal())?;
-        println!("{rendered}");
-        for task in matches {
-            if let Err(err) = record_recent_task(config, &task) {
-                warn!(task = %task.gid, "failed to record recent task: {err:?}");
-            }
-        }
-        return Ok(());
-    }
-
-    if stdout().is_terminal() && args.output.is_none() {
-        let options: Vec<String> = tasks
-            .iter()
-            .map(|task| format!("{} ({})", task.name, task.gid))
-            .collect();
-        let selection = FuzzySelect::with_theme(&ColorfulTheme::default())
-            .with_prompt("Select a task")
-            .items(&options)
-            .default(0)
-            .interact_opt()
-            .context("failed to run fuzzy selector")?;
-        if let Some(index) = selection {
-            let task = tasks.remove(index);
-            if let Err(err) = record_recent_task(config, &task) {
-                warn!(task = %task.gid, "failed to record recent task: {err:?}");
-            }
-            let detail =
-                render_task_detail(&task, TaskOutputFormat::Table, stdout().is_terminal())?;
-            println!("{detail}");
         } else {
-            println!("No task selected.");
+            println!("No tasks found.");
         }
         return Ok(());
     }
 
+    // Record recent tasks for fuzzy selection
+    for task in &tasks {
+        if let Err(err) = record_recent_task(config, task) {
+            warn!(task = %task.gid, "failed to record recent task: {err:?}");
+        }
+    }
+
+    // Display results
     let format = determine_output(args.output);
     let rendered = render_task_list(&tasks, format, stdout().is_terminal())?;
     println!("{rendered}");
@@ -2543,59 +2586,6 @@ fn build_update_request(record: &BatchUpdateRecord, config: &Config) -> Result<T
     builder
         .build()
         .map_err(|err| map_validation_error(&err, "update batch"))
-}
-
-fn filter_by_fuzzy(tasks: Vec<Task>, query: &str) -> Vec<Task> {
-    let mut scored: Vec<(i64, Task)> = tasks
-        .into_iter()
-        .filter_map(|task| fuzzy_score(&task.name, query).map(|score| (score, task)))
-        .collect();
-    scored.sort_by(|a, b| b.0.cmp(&a.0));
-    scored.into_iter().map(|(_, task)| task).collect()
-}
-
-/// Compute fuzzy match score for search queries.
-///
-/// Returns higher scores for better matches. Uses substring matching with position
-/// scoring, falling back to Levenshtein distance for non-matches.
-///
-/// Casts `usize` to `i64` for score calculations. This is safe because task names
-/// are bounded by API limits (~1MB max) and cannot approach `i64::MAX` in practice.
-#[allow(clippy::cast_possible_wrap)]
-fn fuzzy_score(text: &str, query: &str) -> Option<i64> {
-    if query.trim().is_empty() {
-        return Some(0);
-    }
-    let haystack = text.to_ascii_lowercase();
-    let needle = query.to_ascii_lowercase();
-    if haystack.contains(&needle) {
-        let position = haystack.find(&needle).unwrap_or(0) as i64;
-        let score = 500 - position;
-        return Some(score);
-    }
-
-    let distance = levenshtein(&haystack, &needle) as i64;
-    let max_len = haystack.len().max(needle.len()) as i64;
-    let score = max_len - distance;
-    if score <= 0 { None } else { Some(score) }
-}
-
-fn levenshtein(a: &str, b: &str) -> usize {
-    let mut costs: Vec<usize> = (0..=b.len()).collect();
-    for (i, ca) in a.chars().enumerate() {
-        let mut last = i;
-        costs[0] = i + 1;
-        for (j, cb) in b.chars().enumerate() {
-            let current = costs[j + 1];
-            if ca == cb {
-                costs[j + 1] = last;
-            } else {
-                costs[j + 1] = 1 + last.min(current).min(costs[j]);
-            }
-            last = current;
-        }
-    }
-    costs[b.len()]
 }
 
 const fn true_by_default() -> bool {

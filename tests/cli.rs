@@ -1015,19 +1015,19 @@ fn task_search_returns_matches() {
 
     {
         let mut server = Server::new();
-        let list_mock = server
-            .mock("GET", "/tasks")
+        let search_mock = server
+            .mock("GET", "/workspaces/ws-123/tasks/search")
             .match_query(Matcher::AllOf(vec![Matcher::UrlEncoded(
-                "workspace".into(),
-                "ws-123".into(),
+                "text".into(),
+                "Alpha".into(),
             )]))
             .match_header("authorization", "Bearer task-token")
             .with_status(200)
             .with_body(
                 r#"{
                     "data": [
-                        { "gid": "T1", "name": "Alpha", "completed": false },
-                        { "gid": "T2", "name": "Beta", "completed": false }
+                        { "gid": "T1", "name": "Alpha Task", "completed": false },
+                        { "gid": "T2", "name": "Another Alpha", "completed": false }
                     ]
                 }"#,
             )
@@ -1042,6 +1042,7 @@ fn task_search_returns_matches() {
             &[
                 "task",
                 "search",
+                "--query",
                 "Alpha",
                 "--workspace",
                 "ws-123",
@@ -1059,7 +1060,7 @@ fn task_search_returns_matches() {
         );
         let stdout = String::from_utf8_lossy(&output.stdout);
         assert!(stdout.contains("Alpha"));
-        list_mock.assert();
+        search_mock.assert();
     }
 }
 

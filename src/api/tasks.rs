@@ -2,7 +2,10 @@
 
 use crate::{
     api::{ApiClient, ApiError},
-    models::{Task, TaskCreateRequest, TaskListParams, TaskReference, TaskSort, TaskUpdateRequest},
+    models::{
+        Task, TaskCreateRequest, TaskListParams, TaskReference, TaskSearchParams, TaskSort,
+        TaskUpdateRequest,
+    },
 };
 use futures_util::{StreamExt, pin_mut};
 use serde::{Deserialize, Serialize};
@@ -64,6 +67,67 @@ pub async fn list_tasks(
     }
 
     Ok(tasks)
+}
+
+/// Search tasks in a workspace.
+///
+/// # Errors
+///
+/// Returns an error if the API request fails, if deserialization fails, or if the response is invalid.
+pub async fn search_tasks(
+    client: &ApiClient,
+    mut params: TaskSearchParams,
+) -> Result<Vec<Task>, ApiError> {
+    ensure_default_fields_for_search(&mut params);
+
+    let query = params.to_query();
+    let max_items = params.limit;
+    let endpoint = format!("/workspaces/{}/tasks/search", params.workspace);
+    let stream = client.paginate_with_limit::<Task>(&endpoint, query, max_items);
+    pin_mut!(stream);
+
+    let mut tasks = Vec::new();
+    while let Some(page) = stream.next().await {
+        let mut page = page?;
+        tasks.append(&mut page);
+    }
+
+    Ok(tasks)
+}
+
+fn ensure_default_fields_for_search(params: &mut TaskSearchParams) {
+    // Add same defaults as list_tasks
+    let defaults = [
+        "gid",
+        "name",
+        "completed",
+        "completed_at",
+        "due_on",
+        "due_at",
+        "start_on",
+        "start_at",
+        "assignee.name",
+        "assignee.gid",
+        "assignee.email",
+        "resource_type",
+        "resource_subtype",
+        "modified_at",
+        "workspace.name",
+        "workspace.gid",
+        "projects.name",
+        "projects.gid",
+        "tags.name",
+        "tags.gid",
+        "memberships.project.name",
+        "memberships.project.gid",
+        "memberships.section.name",
+        "memberships.section.gid",
+        "permalink_url",
+        "num_subtasks",
+    ];
+    for field in defaults {
+        params.fields.insert(field.to_string());
+    }
 }
 
 /// Retrieve a single task by gid.

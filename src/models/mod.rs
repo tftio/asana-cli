@@ -33,8 +33,9 @@ pub use tag::{
 };
 pub use task::{
     Task, TaskAssigneeStatus, TaskCreateBuilder, TaskCreateData, TaskCreateRequest, TaskListParams,
-    TaskMembership, TaskProjectReference, TaskReference, TaskSectionReference, TaskSort,
-    TaskTagReference, TaskUpdateBuilder, TaskUpdateData, TaskUpdateRequest, TaskValidationError,
+    TaskMembership, TaskProjectReference, TaskReference, TaskSearchParams, TaskSectionReference,
+    TaskSort, TaskTagReference, TaskUpdateBuilder, TaskUpdateData, TaskUpdateRequest,
+    TaskValidationError,
 };
 pub use user::{User, UserIdentity, UserListParams, UserPhoto, UserReference};
 pub use workspace::{Workspace, WorkspaceListParams, WorkspaceReference};

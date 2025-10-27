@@ -333,6 +333,124 @@ pub enum TaskSort {
     Assignee,
 }
 
+/// Parameters for searching tasks.
+#[derive(Debug, Clone, Default)]
+pub struct TaskSearchParams {
+    /// Workspace to search in (required).
+    pub workspace: String,
+    /// Full-text search query.
+    pub text: Option<String>,
+    /// Resource subtype filter.
+    pub resource_subtype: Option<String>,
+    /// Completion status filter.
+    pub completed: Option<bool>,
+    /// Include subtasks.
+    pub is_subtask: Option<bool>,
+    /// Filter blocked tasks.
+    pub is_blocked: Option<bool>,
+    /// Filter tasks with attachments.
+    pub has_attachment: Option<bool>,
+    /// Assignee filter (gid or "me").
+    pub assignee: Option<String>,
+    /// Project filter (gid).
+    pub projects: Vec<String>,
+    /// Section filter (gid).
+    pub sections: Vec<String>,
+    /// Tag filter (gid).
+    pub tags: Vec<String>,
+    /// Created after date (YYYY-MM-DD).
+    pub created_after: Option<String>,
+    /// Created before date (YYYY-MM-DD).
+    pub created_before: Option<String>,
+    /// Modified after date (YYYY-MM-DD).
+    pub modified_after: Option<String>,
+    /// Modified before date (YYYY-MM-DD).
+    pub modified_before: Option<String>,
+    /// Due after date (YYYY-MM-DD).
+    pub due_after: Option<String>,
+    /// Due before date (YYYY-MM-DD).
+    pub due_before: Option<String>,
+    /// Sort field.
+    pub sort_by: Option<String>,
+    /// Sort ascending.
+    pub sort_ascending: bool,
+    /// Maximum number of items to fetch.
+    pub limit: Option<usize>,
+    /// Additional fields to request.
+    pub fields: BTreeSet<String>,
+}
+
+impl TaskSearchParams {
+    /// Convert to query parameters.
+    #[must_use]
+    pub fn to_query(&self) -> Vec<(String, String)> {
+        let mut pairs = Vec::new();
+
+        if let Some(text) = &self.text {
+            pairs.push(("text".into(), text.clone()));
+        }
+        if let Some(subtype) = &self.resource_subtype {
+            pairs.push(("resource_subtype".into(), subtype.clone()));
+        }
+        if let Some(completed) = self.completed {
+            pairs.push(("completed".into(), completed.to_string()));
+        }
+        if let Some(is_subtask) = self.is_subtask {
+            pairs.push(("is_subtask".into(), is_subtask.to_string()));
+        }
+        if let Some(is_blocked) = self.is_blocked {
+            pairs.push(("is_blocked".into(), is_blocked.to_string()));
+        }
+        if let Some(has_attachment) = self.has_attachment {
+            pairs.push(("has_attachment".into(), has_attachment.to_string()));
+        }
+        if let Some(assignee) = &self.assignee {
+            pairs.push(("assignee.any".into(), assignee.clone()));
+        }
+
+        for project in &self.projects {
+            pairs.push(("projects.any".into(), project.clone()));
+        }
+        for section in &self.sections {
+            pairs.push(("sections.any".into(), section.clone()));
+        }
+        for tag in &self.tags {
+            pairs.push(("tags.any".into(), tag.clone()));
+        }
+
+        if let Some(date) = &self.created_after {
+            pairs.push(("created_at.after".into(), date.clone()));
+        }
+        if let Some(date) = &self.created_before {
+            pairs.push(("created_at.before".into(), date.clone()));
+        }
+        if let Some(date) = &self.modified_after {
+            pairs.push(("modified_at.after".into(), date.clone()));
+        }
+        if let Some(date) = &self.modified_before {
+            pairs.push(("modified_at.before".into(), date.clone()));
+        }
+        if let Some(date) = &self.due_after {
+            pairs.push(("due_on.after".into(), date.clone()));
+        }
+        if let Some(date) = &self.due_before {
+            pairs.push(("due_on.before".into(), date.clone()));
+        }
+
+        if let Some(sort_by) = &self.sort_by {
+            pairs.push(("sort_by".into(), sort_by.clone()));
+            pairs.push(("sort_ascending".into(), self.sort_ascending.to_string()));
+        }
+
+        if !self.fields.is_empty() {
+            let field_list = self.fields.iter().cloned().collect::<Vec<_>>().join(",");
+            pairs.push(("opt_fields".into(), field_list));
+        }
+
+        pairs
+    }
+}
+
 /// Payload for creating tasks.
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]

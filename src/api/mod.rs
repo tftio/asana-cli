@@ -32,7 +32,7 @@ pub use tasks::{
     add_dependencies, add_dependents, add_followers, add_project, add_tag, create_task,
     delete_task, get_task, list_dependencies, list_dependents, list_subtasks, list_tasks,
     remove_dependencies, remove_dependents, remove_followers, remove_project, remove_tag,
-    update_task,
+    search_tasks, update_task,
 };
 pub use users::{get_current_user, get_user, list_users};
 pub use workspaces::{get_workspace, list_workspaces};
